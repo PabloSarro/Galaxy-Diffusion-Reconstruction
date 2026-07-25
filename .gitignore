@@ -1,0 +1,15 @@
+# Initial dataset exploration
+EDA/
+
+# Virtual environment
+envSummer1/
+
+# Results and model checkpoints
+results/
+*.job
+*.pt
+
+# Logs and Python cache
+*.log
+*.err
+__pycache__/

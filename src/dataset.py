@@ -1,0 +1,178 @@
+import os
+import glob
+import torch
+import pickle
+import numpy as np
+
+from torch.utils.data import Dataset
+
+
+class GalaxyDataset(Dataset):
+
+    def __init__(self, data_folder, sparsity=0.1, noise_std=0.3):
+        """
+        Parameters
+        ----------
+        data_folder : str
+            Path to the folder containing all the .pkl simulation files.
+
+        noise_std : float
+            Standard deviation of Gaussian observational noise.
+
+        sparsity : float
+            Probability of masking pixels.
+        """
+
+        self.images = []
+        self.norms = []
+        self.num_gals = []
+        self.cross_sections = []
+
+        files = glob.glob(
+            os.path.join(data_folder, "*.pkl")
+        )
+
+        for file in files:
+            with open(file, "rb") as f:
+                metadata, images = pickle.load(f)
+
+            # Store pixel images.
+            images = images.astype(np.float32)
+            self.images.append(images)
+
+            # Store min/max of every observation.
+            norms = metadata["norms"].astype(np.float32)
+            self.norms.append(norms)
+
+            # Store number of galaxies per pixel.
+            num_gals = metadata["num_gals"].astype(np.float32) # Stored to know where to apply noise --> only in informative pixels! There is no noise where there are no galaxies behind!
+            self.num_gals.append(num_gals)
+
+            # Store cross-section per image.
+            n_samples = len(images)
+            sigma = metadata["label"][0]
+
+            self.cross_sections.extend(
+                [sigma] * n_samples
+            )
+
+
+        # Merge all files
+        self.images = np.concatenate(self.images, axis=0)
+        self.norms = np.concatenate(self.norms, axis=0)
+        self.num_gals = np.concatenate(self.num_gals, axis=0)
+        self.cross_sections = np.array(self.cross_sections)
+
+        self.sparsity = sparsity
+        self.noise_std = noise_std
+
+
+    def add_noise(self, TS, norms, num_gals):
+        """
+        Generate observational noise: TS -> NS
+
+            TS : normalised (2,H,W) reduced shear map.
+            norms : (2,) = [min, max] used to de-normalise the image.
+            num_gals : (H,W) galaxy-count map.
+        """
+
+        NS = TS.copy()
+        num_gals = num_gals.copy()
+
+        a, b = norms
+
+        # ===================================================
+        # ================ 1. Random masking ================
+        # ===================================================
+        if self.sparsity > 0:
+            mask = np.random.rand(*num_gals.shape)
+            removed = (mask < self.sparsity)
+            
+            # No galaxies remain in these pixels
+            num_gals[removed] = 0
+
+            # Replace by image background (median), not zero
+            median0 = np.median(NS[0])
+            median1 = np.median(NS[1])
+
+            NS[0, removed] = median0
+            NS[1, removed] = median1
+
+
+        # ===================================================
+        # ======= 2. De-normalise to physical shears ========
+        # ===================================================
+        g1 = NS[0]*(b-a) + a
+        g2 = NS[1]*(b-a) + a
+
+        g = g1 + 1j*g2
+
+
+        # ===================================================
+        # ========== 3. Apply ellipticity noising ===========
+        # ===================================================
+
+        # Pixels containing galaxies
+        valid_pixels = num_gals > 0
+
+        # Intrinsic ellipticity dispersion
+        N_gal = 1 # and N_gal=1 was assumed.
+        sigma_pixel = self.noise_std / np.sqrt(N_gal) # usually sigma_e ~ 0.3 for weak lensing.
+
+        # Generate galaxy shape noise
+        e1, e2 = np.random.normal(
+            loc=0.0,
+            scale=sigma_pixel,
+            size=NS.shape
+        )
+
+        eps_s = e1 + 1j*e2
+        eps_obs = g.copy()
+        abs_g = np.abs(g)
+
+        weak = valid_pixels & (abs_g <= 1)
+        strong = valid_pixels & (abs_g > 1)
+
+        # |g| <= 1
+        eps_obs[weak] = (eps_s[weak] + g[weak]) / (1 + np.conj(g[weak])*eps_s[weak])
+
+        # |g| > 1
+        eps_obs[strong] = (1 + g[strong]*np.conj(eps_s[strong])) / (np.conj(eps_s[strong]) + np.conj(g[strong]))
+
+        g1 = eps_obs.real
+        g2 = eps_obs.imag
+
+        # ===================================================
+        # ================ 4. Normalise back ================
+        # ===================================================
+        NS[0] = (g1-a) / (b-a)
+        NS[1] = (g2-a) / (b-a)
+
+        return NS # Some shear values may be <0 or >1, but that should be fine.
+
+
+    def __len__(self):
+        return len(self.images)
+
+
+    def __getitem__(self, idx):
+        TS = self.images[idx]
+        norms = self.norms[idx]
+        num_gals = self.num_gals[idx]
+
+        NS = self.add_noise(TS, norms, num_gals)
+
+        TS = torch.tensor(
+            TS,
+            dtype=torch.float32
+        )
+
+        NS = torch.tensor(
+            NS,
+            dtype=torch.float32
+        )
+
+        return TS, NS
+    
+    def get_cross_section(self, idx):
+        return self.cross_sections[idx]
