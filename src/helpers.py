@@ -1,12 +1,28 @@
+import time
 import torch
+import random
 import numpy as np
 
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
 
 
+# DETERMINISTIC RUNS FOR COMPARISON
+def set_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
 # ENCODER & DECODER
 def generate_train_valid_datasets(dataset, frac=0.8):
+    start = time.time()
+
     all_indices = np.arange(len(dataset))
     cross_sections = dataset.cross_sections
 
@@ -27,6 +43,9 @@ def generate_train_valid_datasets(dataset, frac=0.8):
     train_dataset = torch.utils.data.Subset(dataset, train_indices)
     valid_dataset = torch.utils.data.Subset(dataset, valid_indices)
 
+    end = time.time()
+    print(f"Generating the Train+Valid Datasets took {end-start} seconds.")
+    
     return train_dataset, valid_dataset
 
 
@@ -48,10 +67,10 @@ def plot_losses(epochs, train_losses, valid_losses):
 
 
 # ENCODER
-def plot_results(encoder, device, valid_dataset):
+def plot_results(encoder, device, valid_dataset, encoder_path):
 
     encoder.load_state_dict(
-        torch.load("encoder_best.pt", map_location=device)
+        torch.load(encoder_path, map_location=device)
     )
     encoder.eval()
     cross_sections = valid_dataset.dataset.cross_sections
@@ -167,6 +186,8 @@ def evaluate_reconstruction(encoder, decoder, diffusion, device, valid_loader, m
         mean Pearson correlation
     """
 
+    start = time.time()
+
     decoder.load_state_dict(
         torch.load("decoder_best.pt")
     )
@@ -178,6 +199,9 @@ def evaluate_reconstruction(encoder, decoder, diffusion, device, valid_loader, m
     batches = 0
 
     with torch.no_grad():
+
+        torch.manual_seed(42)
+        torch.cuda.manual_seed(42)
 
         for TS, NS in valid_loader:
             TS = TS.to(device)
@@ -200,19 +224,26 @@ def evaluate_reconstruction(encoder, decoder, diffusion, device, valid_loader, m
             TS_centered = TS_flat - TS_flat.mean(dim=1, keepdim=True)
             rec_centered = rec_flat - rec_flat.mean(dim=1, keepdim=True)
 
-            corr = (TS_centered * rec_centered).sum(dim=1) / (torch.sqrt((TS_centered**2).sum(dim=1))*torch.sqrt((rec_centered**2).sum(dim=1)))
+            eps = 1e-8
+            cov = (TS_centered * rec_centered).sum(dim=1)
+            std_prod = torch.sqrt((TS_centered**2).sum(dim=1))*torch.sqrt((rec_centered**2).sum(dim=1))
+            
+            corr = cov / (std_prod + eps)
             corr_values.extend(corr.cpu().numpy())
 
             batches += 1
             if max_batches is not None and batches >= max_batches:
                 break
 
-    print(f"MSE: {np.mean(mse_values)} | Pearson: {np.mean(corr_values)}")
+    end = time.time()
+    print(f"MSE: {np.mean(mse_values)} | Pearson: {np.mean(corr_values)} (this took {end-start} seconds)")
 
 
 
 # DECODER
 def plot_reconstruction_img(encoder, decoder, diffusion, device, valid_dataset):
+
+    start = time.time()
 
     decoder.load_state_dict(
         torch.load("decoder_best.pt")
@@ -246,3 +277,6 @@ def plot_reconstruction_img(encoder, decoder, diffusion, device, valid_dataset):
 
     plt.tight_layout()
     plt.savefig("decoder_reconstruction.png", dpi=200)
+
+    end = time.time()
+    print(f"Plotting the reconstructed image took {end-start} seconds.")

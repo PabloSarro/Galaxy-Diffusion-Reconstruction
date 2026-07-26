@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from dataset import GalaxyDataset
 from model import Encoder, Decoder, diffusion_loss
 from diffusion import Diffusion
-from helpers import plot_losses, evaluate_reconstruction, plot_reconstruction_img
+from helpers import set_seed, plot_losses, evaluate_reconstruction, plot_reconstruction_img
 
 import torch.nn.functional as F
 
@@ -15,7 +15,9 @@ NOISE_STD = 1e-2
 SPARSITY = 0.5
 ENCODER_PATH = "../results/ep500_0.01_0.5/encoder_best.pt"
 TIMESTEPS_DIFF = 1000
-EPOCHS = 10
+EPOCHS = 100
+
+set_seed(42)
 
 # Dataset
 dataset = GalaxyDataset(
@@ -30,6 +32,7 @@ train_loader = DataLoader(
     train_dataset,
     batch_size=64,
     shuffle=True,
+    generator=torch.Generator().manual_seed(42),
     pin_memory=True
 )
 valid_loader = DataLoader(
@@ -47,7 +50,7 @@ device = torch.device(
 # Encoder
 encoder = Encoder(latent_dim=128).to(device)
 encoder.load_state_dict(
-    torch.load(ENCODER_PATH)
+    torch.load(ENCODER_PATH, map_location=device)
 )
 encoder.eval() # Use encoder for evaluation (training already done in train_encoder.py)
 
@@ -85,15 +88,13 @@ for epoch in range(epochs):
 
         optimizer.zero_grad()
         with torch.no_grad():
-            z_obs = encoder(NS) # Experiment for later: torch.zeros(TS.size(0), 128, device=device)
+            z_obs = encoder(NS) # torch.zeros(TS.size(0), 128, device=device)
         if batch_num == 1:
             print(f"DEBUG: z_obs min={z_obs.min().item()}, max={z_obs.max().item()}, norm={z_obs.norm(dim=1).mean()}, mean={z_obs.mean().item()}, std={z_obs.std().item()}, abs mean={z_obs.abs().mean()}")
 
         # Sample diffusion timestep
         t = diffusion.sample_timesteps(TS.size(0))
-        if batch_num == 1:
-            print(f"DEBUG: t={t}")
-        
+
         # Add diffusion noise
         x_t, noise = diffusion.q_sample(TS, t)
         if batch_num == 1:
@@ -129,7 +130,7 @@ for epoch in range(epochs):
             TS = TS.to(device, non_blocking=True)
             NS = NS.to(device, non_blocking=True)
 
-            z_obs = encoder(NS)
+            z_obs = encoder(NS) # torch.zeros(TS.size(0), 128, device=device)
 
             t = diffusion.sample_timesteps(TS.size(0))
             x_t, noise = diffusion.q_sample(TS, t)
@@ -143,7 +144,7 @@ for epoch in range(epochs):
     valid_losses.append(epoch_valid_loss)
 
     # Conditional Reconstruction Diagnostic
-    if epoch % 5 == 0 or epoch == EPOCHS-1:
+    if epoch % 10 == 0 or epoch == EPOCHS-1:
         with torch.no_grad():
             TS, NS = next(iter(valid_loader))
             TS = TS.to(device)
@@ -151,10 +152,10 @@ for epoch in range(epochs):
             z_obs = encoder(NS)
             # Random embedding, for diagnosing
             z_random = torch.randn_like(z_obs)
-            recon_real = diffusion.sample(decoder, z_obs[:10], TS[:10].shape)
-            recon_random = diffusion.sample(decoder, z_random[:10], TS[:10].shape)
-            mse_real = F.mse_loss(recon_real, TS[:10])
-            mse_random = F.mse_loss(recon_random, TS[:10])
+            recon_real = diffusion.sample(decoder, z_obs[:4], TS[:4].shape)
+            recon_random = diffusion.sample(decoder, z_random[:4], TS[:4].shape)
+            mse_real = F.mse_loss(recon_real, TS[:4])
+            mse_random = F.mse_loss(recon_random, TS[:4])
             mse_between = F.mse_loss(recon_real, recon_random)
             print(f"DEBUG (Valid Diagnostic): MSE real={mse_real:.4f}, MSE random={mse_random:.4f}, MSE(real, random)={mse_between:.4f}")
 
@@ -172,10 +173,6 @@ for epoch in range(epochs):
         )
         print("   Best model was stored")
 
-    if (epoch+1) % 20 == 0:
-        evaluate_reconstruction(encoder, decoder, diffusion, device, valid_loader, max_batches=10)
-    decoder.train()
-
 
 
 # Visualise plot of the training and validation losses after each epoch.
@@ -186,4 +183,4 @@ evaluate_reconstruction(encoder, decoder, diffusion, device, valid_loader, max_b
 # Low MSE + low Pearson → blurry/mean reconstruction.
 # High Pearson + high MSE → correct structures but wrong amplitudes.
 
-plot_reconstruction_img(encoder, decoder, diffusion, device, valid_dataset)
+# plot_reconstruction_img(encoder, decoder, diffusion, device, valid_dataset)

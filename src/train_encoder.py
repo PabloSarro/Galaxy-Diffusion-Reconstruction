@@ -10,7 +10,8 @@ from helpers import plot_losses, plot_results
 
 
 NOISE_STD = 1e-2
-SPARSITY = 0.5
+SPARSITY = 0.25
+LATENT_DIM = 256
 EPOCHS = 500
 
 # Dataset
@@ -40,7 +41,7 @@ device = torch.device(
     "cuda" if torch.cuda.is_available() else "cpu"
 )
 
-encoder = Encoder(latent_dim=128).to(device)
+encoder = Encoder(latent_dim=LATENT_DIM).to(device)
 
 optimizer = torch.optim.Adam(
     encoder.parameters(),
@@ -116,4 +117,4 @@ for epoch in range(EPOCHS):
 plot_losses(EPOCHS, train_losses, valid_losses)
 
 # Visualise similarity matrix between embeddings of 10 random validation simulations.
-plot_results(encoder, device, valid_dataset)
+plot_results(encoder, device, valid_dataset, "encoder_best.pt")
