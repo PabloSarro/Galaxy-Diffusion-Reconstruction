@@ -11,11 +11,17 @@ from helpers import set_seed, plot_losses, evaluate_reconstruction, plot_reconst
 import torch.nn.functional as F
 
 
-NOISE_STD = 1e-2
-SPARSITY = 0.5
-ENCODER_PATH = "../results/ep500_0.01_0.5/encoder_best.pt"
+# Dataset noising parameters
+NOISE_STD = 0.01
+SPARSITY = 0.25
+# Encoder parameters
+LATENT_DIM = 128
+ENCODER_PATH = "../results/dim128_0.01_0.25/encoder_best.pt"
+# Diffusion parameters
 TIMESTEPS_DIFF = 1000
-EPOCHS = 100
+# Training parameters
+EPOCHS = 150
+DEBUG = True
 
 set_seed(42)
 
@@ -32,26 +38,22 @@ train_loader = DataLoader(
     train_dataset,
     batch_size=64,
     shuffle=True,
-    generator=torch.Generator().manual_seed(42),
+    generator=torch.Generator().manual_seed(42), # Done to provide the optimizer with the same batch order across different runs, for better comparison.
     pin_memory=True
 )
 valid_loader = DataLoader(
     valid_dataset,
     batch_size=64,
-    shuffle=False,
+    shuffle=False, # No generator needed here, since there is no shuffle, and hence indices will be: [0, 1, 2, ...]
     pin_memory=True
 )
 
 # Model
-device = torch.device(
-    "cuda" if torch.cuda.is_available() else "cpu"
-)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Encoder
-encoder = Encoder(latent_dim=128).to(device)
-encoder.load_state_dict(
-    torch.load(ENCODER_PATH, map_location=device)
-)
+encoder = Encoder(latent_dim=LATENT_DIM).to(device)
+encoder.load_state_dict(torch.load(ENCODER_PATH, map_location=device))
 encoder.eval() # Use encoder for evaluation (training already done in train_encoder.py)
 
 for p in encoder.parameters():
@@ -59,7 +61,7 @@ for p in encoder.parameters():
 
 # Decoder
 diffusion = Diffusion(timesteps=TIMESTEPS_DIFF, device=device)
-decoder = Decoder(timesteps=TIMESTEPS_DIFF, latent_dim=128).to(device)
+decoder = Decoder(timesteps=TIMESTEPS_DIFF, latent_dim=LATENT_DIM).to(device)
 
 optimizer = torch.optim.AdamW(
     decoder.parameters(),
@@ -77,42 +79,34 @@ start = time.time()
 
 for epoch in range(epochs):
     total_train_loss = 0
-    batch_num = 0
+    debug_print = True
+
     for TS, NS in train_loader:
-        batch_num += 1
         TS = TS.to(device, non_blocking=True)
         NS = NS.to(device, non_blocking=True)
         
-        if batch_num == 1:
-            print(f"DEBUG: TS min={TS.min().item()}, max={TS.max().item()}, mean={TS.mean().item()}, std={TS.std().item()}")
-
         optimizer.zero_grad()
         with torch.no_grad():
             z_obs = encoder(NS) # torch.zeros(TS.size(0), 128, device=device)
-        if batch_num == 1:
-            print(f"DEBUG: z_obs min={z_obs.min().item()}, max={z_obs.max().item()}, norm={z_obs.norm(dim=1).mean()}, mean={z_obs.mean().item()}, std={z_obs.std().item()}, abs mean={z_obs.abs().mean()}")
 
-        # Sample diffusion timestep
-        t = diffusion.sample_timesteps(TS.size(0))
+        t = diffusion.sample_timesteps(TS.size(0))   # Sample diffusion timestep
+        x_t, noise = diffusion.q_sample(TS, t)       # Add diffusion noise
+        noise_pred = decoder(x_t, z_obs, t)          # Predict noise
 
-        # Add diffusion noise
-        x_t, noise = diffusion.q_sample(TS, t)
-        if batch_num == 1:
-            print(f"DEBUG: noise min={noise.min().item()}, max={noise.max().item()}, mean={noise.mean().item()}, std={noise.std().item()}")
-
-        # Predict noise
-        noise_pred = decoder(x_t, z_obs, t)
-        if batch_num == 1:
-            print(f"DEBUG: noise_pred min={noise_pred.min().item()}, max={noise_pred.max().item()}, mean={noise_pred.mean().item()}, std={noise_pred.std().item()}")
-
-        # Loss function
-        loss = diffusion_loss(noise_pred, noise)
-        if batch_num == 1:
-            print(f"DEBUG: loss={loss}")
+        loss = diffusion_loss(noise_pred, noise)     # Loss function
         
         loss.backward()
         torch.nn.utils.clip_grad_norm_(decoder.parameters(), max_norm=5.0)
         optimizer.step()
+
+        if DEBUG and debug_print:
+            print(f"[DEBUG]:")
+            print(f"TS min         = {TS.min().item()},         max={TS.max().item()},         mean={TS.mean().item()},         std={TS.std().item()}")
+            print(f"z_obs min      = {z_obs.min().item()},      max={z_obs.max().item()},      mean={z_obs.mean().item()},      std={z_obs.std().item()},     norm={z_obs.norm(dim=1).mean()}, abs mean={z_obs.abs().mean()}")
+            print(f"noise min      = {noise.min().item()},      max={noise.max().item()},      mean={noise.mean().item()},      std={noise.std().item()}")
+            print(f"noise_pred min = {noise_pred.min().item()}, max={noise_pred.max().item()}, mean={noise_pred.mean().item()}, std={noise_pred.std().item()}")
+            print(f"loss = {loss}")
+            debug_print = False # One DEBUG print per epoch.
 
         total_train_loss += loss.item()
 
@@ -156,8 +150,7 @@ for epoch in range(epochs):
             recon_random = diffusion.sample(decoder, z_random[:4], TS[:4].shape)
             mse_real = F.mse_loss(recon_real, TS[:4])
             mse_random = F.mse_loss(recon_random, TS[:4])
-            mse_between = F.mse_loss(recon_real, recon_random)
-            print(f"DEBUG (Valid Diagnostic): MSE real={mse_real:.4f}, MSE random={mse_random:.4f}, MSE(real, random)={mse_between:.4f}")
+            print(f"DIAGNOSTIC: MSE real={mse_real:.4f}, MSE random={mse_random:.4f}")
 
     decoder.train()
 
@@ -183,4 +176,4 @@ evaluate_reconstruction(encoder, decoder, diffusion, device, valid_loader, max_b
 # Low MSE + low Pearson → blurry/mean reconstruction.
 # High Pearson + high MSE → correct structures but wrong amplitudes.
 
-# plot_reconstruction_img(encoder, decoder, diffusion, device, valid_dataset)
+plot_reconstruction_img(encoder, decoder, diffusion, device, valid_dataset)
