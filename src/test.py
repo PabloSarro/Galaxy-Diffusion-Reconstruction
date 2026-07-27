@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 dataset = GalaxyDataset(
     data_folder="/scratch/izar/sarro/BAHAMAS-data-nonsparse/",
     noise_std=0.01,
-    sparsity=0.5
+    sparsity=0.25
 )
 
 # DataLoader

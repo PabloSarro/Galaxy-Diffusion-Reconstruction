@@ -11,8 +11,9 @@ from helpers import plot_losses, plot_results
 
 NOISE_STD = 1e-2
 SPARSITY = 0.25
-LATENT_DIM = 256
+LATENT_DIM = 128
 EPOCHS = 500
+
 
 # Dataset
 dataset = GalaxyDataset(
@@ -103,7 +104,7 @@ for epoch in range(EPOCHS):
     print(
         f"Epoch {epoch+1}/{EPOCHS} --> Train: {epoch_train_loss:.4f} | Valid: {epoch_valid_loss:.4f} (in {(time.time() - start):.2f}s)."
     )
-    
+
     if epoch_valid_loss < best_loss:
         best_loss = epoch_valid_loss
         torch.save(
