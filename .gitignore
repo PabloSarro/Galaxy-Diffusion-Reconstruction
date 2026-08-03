@@ -5,6 +5,8 @@ EDA/
 envSummer1/
 
 # Results and model checkpoints
+old_src/
+old_results/
 results/
 *.job
 *.pt

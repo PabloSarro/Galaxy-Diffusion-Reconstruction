@@ -1,13 +1,12 @@
+import os
 import time
 import torch
 import random
 import numpy as np
-
 import matplotlib.pyplot as plt
-import torch.nn.functional as F
 
 
-# DETERMINISTIC RUNS FOR COMPARISON
+# Deterministic Runs for Better Comparison
 def set_seed(seed=42):
     random.seed(seed)
     np.random.seed(seed)
@@ -19,7 +18,7 @@ def set_seed(seed=42):
     torch.backends.cudnn.benchmark = False
 
 
-# ENCODER & DECODER
+# Dataset Splitting
 def generate_train_valid_datasets(dataset, frac=0.8):
     start = time.time()
 
@@ -44,13 +43,15 @@ def generate_train_valid_datasets(dataset, frac=0.8):
     valid_dataset = torch.utils.data.Subset(dataset, valid_indices)
 
     end = time.time()
-    print(f"Generating the Train+Valid Datasets took {end-start} seconds.")
+    print(f"Train+Valid datasets generated (in {end-start:.5f}s).")
     
     return train_dataset, valid_dataset
 
 
-# ENCODER & DECODER
-def plot_losses(epochs, train_losses, valid_losses):
+# Loss Plotting
+def plot_losses(train_losses, valid_losses, output_dir):
+    epochs = len(train_losses)
+
     plt.figure(figsize=(6,4))
 
     plt.plot(range(1, epochs+1), train_losses, label="Train")
@@ -58,140 +59,22 @@ def plot_losses(epochs, train_losses, valid_losses):
 
     plt.legend(loc="best")
     plt.xlabel("Epoch")
-    plt.ylabel("Contrastive Loss")
-    plt.title("Contrastive Training and Validation Losses")
+    plt.ylabel("Cold Diffusion Loss (MSE)")
+    plt.title("Training and Validation Losses")
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("train_valid_losses.png", dpi=200)
-    plt.show()
-
-
-# ENCODER
-def plot_results(encoder, device, valid_dataset, encoder_path):
-
-    encoder.load_state_dict(
-        torch.load(encoder_path, map_location=device)
-    )
-    encoder.eval()
-    cross_sections = valid_dataset.dataset.cross_sections
-
-    # Randomly select 10 samples from validation set
-    valid_indices = np.arange(len(valid_dataset))
-    sigma_groups = {}
-
-    for idx in valid_indices:
-        sigma = cross_sections[valid_dataset.indices[idx]]
-
-        if sigma not in sigma_groups:
-            sigma_groups[sigma] = []
-
-        sigma_groups[sigma].append(idx)
-
-    metrics = {}
-    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
-    axes = axes.flatten()
-
-    for i, (sigma, indices) in enumerate(sigma_groups.items()):
-
-        # Pick 10 random validation samples
-        n_samples = min(10, len(indices))
-        selected = np.random.choice(
-            indices,
-            size=n_samples,
-            replace=False
-        )
-
-        TS_list = []
-        NS_list = []
-
-        for idx in selected:
-            TS, NS = valid_dataset[idx]
-            TS_list.append(TS)
-            NS_list.append(NS)
-
-        TS_batch = torch.stack(TS_list).to(device)
-        NS_batch = torch.stack(NS_list).to(device)
-
-        with torch.no_grad():
-
-            z_true = encoder(TS_batch)
-            z_obs = encoder(NS_batch)
-
-            z_true = F.normalize(z_true, dim=1)
-            z_obs = F.normalize(z_obs, dim=1)
-
-            # 10x10 cosine similarity matrix
-            similarity_matrix = torch.matmul(z_true, z_obs.T)
-
-        similarity_matrix = similarity_matrix.cpu().numpy()
-
-        # Metrics
-        target = np.eye(n_samples)
-
-        mse = np.mean((similarity_matrix - target)**2)
-        diagonal = np.mean(np.diag(similarity_matrix))
-        off_diagonal = np.mean(similarity_matrix[~np.eye(n_samples, dtype=bool)])
-        separation = diagonal / (off_diagonal+1e-10)
-
-        metrics[sigma] = {
-            "MSE": mse,
-            "Diagonal": diagonal,
-            "Off-diagonal": off_diagonal,
-            "Separation": separation
-        }
-
-        # Plot
-        ax = axes[i]
-        im = ax.imshow(similarity_matrix, vmin=-1, vmax=1, cmap="viridis")
-        fig.colorbar(im, ax=ax, label="Cosine similarity")
-
-        for i in range(n_samples):
-            for j in range(n_samples):
-                ax.text(j, i, f"{similarity_matrix[i,j]:.2f}",
-                    ha="center",
-                    va="center",
-                    color="white",
-                    fontsize=8
-                )
-
-        ax.set_xticks(range(n_samples))
-        ax.set_yticks(range(n_samples))
-        ax.set_xlabel("NS embedding index")
-        ax.set_ylabel("TS embedding index")
-        ax.set_title(f"Cross-section = {sigma:.3e}\nMSE={mse:.4e}")
-
-    plt.tight_layout()
-    plt.savefig("cosine_matrices_all_sigma.png", dpi=200)
+    plt.savefig(os.path.join(output_dir, "train_valid_losses.png"), dpi=200)
     plt.close()
 
-    # Print summary table
-    print("\n=== Encoder performance by cross-section ===")
 
-    for sigma, values in metrics.items():
-        print(f"\nσ/m = {sigma:.3e}")
-        print(f"MSE          : {values['MSE']:.6f}")
-        print(f"Diagonal     : {values['Diagonal']:.4f}")
-        print(f"Off-diagonal : {values['Off-diagonal']:.4f}")
-        print(f"Separation   : {values['Separation']:.4f}")
-
-
-
-# DECODER
-def evaluate_reconstruction(encoder, decoder, diffusion, device, valid_loader, max_batches=None):
+# Check MSE + Pearson
+def evaluate_cold_diffusion(decoder, diffusion, device, valid_loader, max_batches=None, model_path="decoder_best.pt"):
     """
-    Evaluate diffusion reconstruction quality.
-
-    Returns:
-        mean MSE
-        mean Pearson correlation
+    Evaluate Cold Diffusion reconstruction quality (MSE & Pearson).
     """
-
     start = time.time()
 
-    decoder.load_state_dict(
-        torch.load("decoder_best.pt")
-    )
-    encoder.eval()
+    decoder.load_state_dict(torch.load(model_path, map_location=device))
     decoder.eval()
 
     mse_values = []
@@ -199,34 +82,32 @@ def evaluate_reconstruction(encoder, decoder, diffusion, device, valid_loader, m
     batches = 0
 
     with torch.no_grad():
+        for x0, norms, num_gals in valid_loader:
+            x0 = x0.to(device)
+            norms = norms.to(device)
+            num_gals = num_gals.to(device)
 
-        torch.manual_seed(42)
-        torch.cuda.manual_seed(42)
+            # Generate fully degraded observation at t=1000.
+            t_max = torch.full((x0.size(0),), diffusion.timesteps, device=device, dtype=torch.long)
+            xT = diffusion.degrade(x0, norms, num_gals, t_max)
 
-        for TS, NS in valid_loader:
-            TS = TS.to(device)
-            NS = NS.to(device)
-
-            # Condition
-            z_obs = encoder(NS)
-
-            # Generate reconstruction
-            reconstruction = diffusion.sample(decoder, z_obs, TS.shape)
+            # Run Cold Diffusion reverse sampling starting from xT
+            x0_hat = diffusion.sample(decoder, xT, norms, num_gals)
 
             # MSE
-            mse = torch.mean((TS - reconstruction)**2)
+            mse = torch.mean((x0 - x0_hat)**2)
             mse_values.append(mse.item())
 
             # Pearson correlation
-            TS_flat = TS.flatten(1)
-            rec_flat = reconstruction.flatten(1)
+            x0_flat = x0.flatten(1)
+            x0_hat_flat = x0_hat.flatten(1)
 
-            TS_centered = TS_flat - TS_flat.mean(dim=1, keepdim=True)
-            rec_centered = rec_flat - rec_flat.mean(dim=1, keepdim=True)
+            x0_centered = x0_flat - x0_flat.mean(dim=1, keepdim=True)
+            x0_hat_centered = x0_hat_flat - x0_hat_flat.mean(dim=1, keepdim=True)
 
             eps = 1e-8
-            cov = (TS_centered * rec_centered).sum(dim=1)
-            std_prod = torch.sqrt((TS_centered**2).sum(dim=1))*torch.sqrt((rec_centered**2).sum(dim=1))
+            cov = (x0_centered * x0_hat_centered).sum(dim=1)
+            std_prod = torch.sqrt((x0_centered**2).sum(dim=1))*torch.sqrt((x0_hat_centered**2).sum(dim=1))
             
             corr = cov / (std_prod + eps)
             corr_values.extend(corr.cpu().numpy())
@@ -236,47 +117,64 @@ def evaluate_reconstruction(encoder, decoder, diffusion, device, valid_loader, m
                 break
 
     end = time.time()
-    print(f"MSE: {np.mean(mse_values)} | Pearson: {np.mean(corr_values)} (this took {end-start} seconds)")
+    print(f"\n=== Cold Diffusion Evaluation Summary ===")
+    print(f"MSE     : {np.mean(mse_values):.6f}")
+    print(f"Pearson : {np.mean(corr_values):.4f}")
+    print(f"MSE + Pearson Evaluation took {end-start:.1f}s.\n")
 
 
 
-# DECODER
-def plot_reconstruction_img(encoder, decoder, diffusion, device, valid_dataset):
-
+# Cold Diffusion Reconstruction Visualisation
+def plot_cold_diffusion_reconstruction(decoder, diffusion, device, train_dataset, valid_dataset, n_samples=5, model_path="decoder_best.pt", output_dir="."):
     start = time.time()
 
-    decoder.load_state_dict(
-        torch.load("decoder_best.pt")
-    )
-    encoder.eval()
+    decoder.load_state_dict(torch.load(model_path, map_location=device))
     decoder.eval()
 
-    TS, NS = valid_dataset[0]
+    datasets = [("train", train_dataset), ("valid", valid_dataset)]
+    os.makedirs(output_dir, exist_ok=True)
 
-    TS = TS.unsqueeze(0).to(device)
-    NS = NS.unsqueeze(0).to(device)
+    for prefix, dataset in datasets:
+        for i in range(n_samples):
+            x0, norms, num_gals = dataset[i]
 
-    with torch.no_grad():
-        z_obs = encoder(NS)
-        reconstruction = diffusion.sample(decoder, z_obs, TS.shape)
+            x0 = x0.unsqueeze(0).to(device)
+            norms = norms.unsqueeze(0).to(device)
+            num_gals = num_gals.unsqueeze(0).to(device)
 
-    TS = TS.cpu().numpy()[0]
-    NS = NS.cpu().numpy()[0]
-    reconstruction = reconstruction.cpu().numpy()[0]
+            with torch.no_grad():
+                # Create starting degraded observation NS at t = 1000
+                t_max = torch.full((1,), diffusion.timesteps, device=device, dtype=torch.long)
+                xT = diffusion.degrade(x0, norms, num_gals, t_max)
 
-    fig, ax = plt.subplots(1,3, figsize=(12,4))
+                # Run Reverse Sampling
+                x0_hat = diffusion.sample(decoder, xT, norms, num_gals)
 
-    ax[0].imshow(TS[0])
-    ax[0].set_title("TS (true)")
+            x0_np = x0.cpu().numpy()[0]
+            xT_np = xT.cpu().numpy()[0]
+            x0_hat_np = x0_hat.cpu().numpy()[0]
 
-    ax[1].imshow(NS[0])
-    ax[1].set_title("NS (observed)")
+            fig, ax = plt.subplots(1,3, figsize=(12,4))
+            vmin, vmax = 0.0, 1.0
 
-    ax[2].imshow(reconstruction[0])
-    ax[2].set_title("Reconstruction")
+            ax[0].imshow(x0_np[0], cmap="viridis", vmin=vmin, vmax=vmax)
+            ax[0].set_title(r"$x_0$ (true)")
+            ax[0].axis("off")
 
-    plt.tight_layout()
-    plt.savefig("decoder_reconstruction.png", dpi=200)
+            ax[1].imshow(xT_np[0], cmap="viridis", vmin=vmin, vmax=vmax)
+            ax[1].set_title(rf"$x_T$ (noised at t={diffusion.timesteps})")
+            ax[1].axis("off")
+
+            ax[2].imshow(x0_hat_np[0], cmap="viridis", vmin=vmin, vmax=vmax)
+            ax[2].set_title(r"$\hat{x}_0$ (reconstruction)")
+            ax[2].axis("off")
+
+            plt.tight_layout()
+
+            filepath = os.path.join(output_dir, f"{prefix}_sample_{i+1}.png")
+            plt.savefig(filepath, dpi=200)
+            plt.close()
 
     end = time.time()
-    print(f"Plotting the reconstructed image took {end-start} seconds.")
+    total_plots = len(datasets) * n_samples
+    print(f"Plotting all {total_plots} reconstructed images took {end-start:.1f}s.")
