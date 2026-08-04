@@ -10,6 +10,7 @@ class Diffusion:
         self.max_sparsity = max_sparsity
         self.max_noise_std = max_noise_std
 
+
     def sample_timesteps(self, batch_size):
         """
         Random timestep for each image.
@@ -20,6 +21,7 @@ class Diffusion:
             size=(batch_size,),
             device=self.device
         )
+    
 
     def degrade(self, x0, norms, num_gals, t, fixed_mask_rand=None, fixed_e1=None, fixed_e2=None):
         """
@@ -127,48 +129,72 @@ class Diffusion:
 
 
     @torch.no_grad()
-    def sample(self, decoder, NS, norms, num_gals):
+    def sample(self, decoder, x, norms, num_gals, method="algo2", fixed_mask_rand=None, fixed_e1=None, fixed_e2=None):
         """
         Cold Diffusion reverse sampling operator: R(xt, t)
-        This starts from the observed NS (at t = T).
+        This starts from the observed x (at t = T).
+
+        method:
+            "direct" -> xT -> x0 prediction only
+            "algo1"  -> Algorithm 1
+            "algo2"   -> Algorithm 2
         
         Output: x0 = R(xt, t), the predicted clean image.
         """
 
-        B, C, H, W = NS.shape
+        B, C, H, W = x.shape
         device = self.device
-        
-        # Start inference from the fully degraded observation NS
-        x = NS.clone()
 
         # Pre-sample consistent randomness for the backward trajectory steps
-        fixed_mask_rand = torch.rand((B, H, W), device=device)
-        fixed_e1 = torch.randn((B, H, W), device=device)
-        fixed_e2 = torch.randn((B, H, W), device=device)
+        if fixed_mask_rand is None:
+            fixed_mask_rand = torch.rand((B, H, W), device=device)
+        if fixed_e1 is None:
+            fixed_e1 = torch.randn((B, H, W), device=device)
+        if fixed_e2 is None:
+            fixed_e2 = torch.randn((B, H, W), device=device)
 
-        for t in reversed(range(1, self.timesteps + 1)): # for t in timesteps+1, timesteps, timesteps-1, ..., 4, 3, 2, 1.
-            t_batch = torch.full((B,), t, device=device, dtype=torch.long)
-            t_prev_batch = torch.full((B,), t - 1, device=device, dtype=torch.long)
+        # ==========================================================
+        # ============ 1. Direct prediction: xT -> x0 ==============
+        # ==========================================================
+        if method == "direct":
+            t_max = torch.full((B,), self.timesteps, device=device, dtype=torch.long)
+            return decoder(x, t_max)
 
-            # Predict clean image x0 directly
-            x0_pred = decoder(x, t_batch) # \hat{x0}
+        # ==========================================================
+        # ============= 2. Naive algorithm: xT -> x0 ===============
+        # ==========================================================
 
-            # ======== ALGORITHM 1: Naive (Commented out) ========
-            # ======= Idea: =======
-            # xt --[R]-> x0_pred --[D]-> x_{t-1} --[R]-> x0_pred --[D]-> x_{t-2} --> ... --> x_1 --[R]-> x_0.
+        # Idea: xt --[R]-> x0_pred --[D]-> x_{t-1} --[R]-> x0_pred --[D]-> x_{t-2} --> ... --> x_1 --[R]-> x_0.
+
+        elif method == "algo1":
+            for t in reversed(range(1, self.timesteps + 1)): # for t in timesteps+1, timesteps, timesteps-1, ..., 4, 3, 2, 1.
+                t_batch = torch.full((B,), t, device=device, dtype=torch.long)
+                t_prev_batch = torch.full((B,), t - 1, device=device, dtype=torch.long)
+
+                # Predict clean image x0 directly
+                x0_pred = decoder(x, t_batch) # \hat{x0}
+                
+                x = self.degrade(x0_pred, norms, num_gals, t_prev_batch, fixed_mask_rand=fixed_mask_rand, fixed_e1=fixed_e1, fixed_e2=fixed_e2)
             
-            # ==== Implementation: ====
-            # x = self.degrade(pred_x0, norms, num_gals, t_prev_batch, fixed_mask_rand=fixed_mask_rand, fixed_e1=fixed_e1, fixed_e2=fixed_e2)
-            # return x
+            return x
 
-            # ======== ALGORITHM 2: Cold Diffusion Update Rule ========
-            # ======= Idea: =======
-            # xt --[R]-> x0_pred --> x_{t-1} = xt-D(x0_pred, t)+D(x0_pred, t-1) --[R]-> x0_pred --> ... --> x_1 = x_2-D(x0_pred, 2)+D(x0_pred, 1) --[R]-> x0_pred --> x0 = x1-D(x0_pred, 1)+D(x0_pred, 0)=x1-D(x0_pred)+x0_pred.
-            
-            # ==== Implementation: ====
-            xt_hat = self.degrade(x0_pred, norms, num_gals, t_batch, fixed_mask_rand=fixed_mask_rand, fixed_e1=fixed_e1, fixed_e2=fixed_e2)
-            xt_prev_hat = self.degrade(x0_pred, norms, num_gals, t_prev_batch, fixed_mask_rand=fixed_mask_rand, fixed_e1=fixed_e1, fixed_e2=fixed_e2)
-            
-            x = x - xt_hat + xt_prev_hat
+        # ==========================================================
+        # =========== 3. Complete algorithm: xT -> x0 ==============
+        # ==========================================================
 
-        return x
+        # Idea: xt --[R]-> x0_pred --> x_{t-1} = xt-D(x0_pred, t)+D(x0_pred, t-1) --[R]-> x0_pred --> ... --> x_1 = x_2-D(x0_pred, 2)+D(x0_pred, 1) --[R]-> x0_pred --> x0 = x1-D(x0_pred, 1)+D(x0_pred, 0)=x1-D(x0_pred)+x0_pred.
+
+        elif method =="algo2":
+            for t in reversed(range(1, self.timesteps + 1)): # for t in timesteps+1, timesteps, timesteps-1, ..., 4, 3, 2, 1.
+                t_batch = torch.full((B,), t, device=device, dtype=torch.long)
+                t_prev_batch = torch.full((B,), t - 1, device=device, dtype=torch.long)
+
+                # Predict clean image x0 directly
+                x0_pred = decoder(x, t_batch) # \hat{x0}
+                
+                xt_hat = self.degrade(x0_pred, norms, num_gals, t_batch, fixed_mask_rand=fixed_mask_rand, fixed_e1=fixed_e1, fixed_e2=fixed_e2)
+                xt_prev_hat = self.degrade(x0_pred, norms, num_gals, t_prev_batch, fixed_mask_rand=fixed_mask_rand, fixed_e1=fixed_e1, fixed_e2=fixed_e2)
+                
+                x = x - xt_hat + xt_prev_hat
+
+            return x

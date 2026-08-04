@@ -21,17 +21,20 @@ MAX_SPARSITY = 0.20 # 0.25 first training
 MAX_NOISE_STD = 0.005 # 0.01 first training
 
 # Training parameters
-EPOCHS = 200 # Set to 5 for short runs
-BATCH_SIZE = 64
+EPOCHS = 50 # Set to 2/3 for long runs
+BATCH_SIZE = 16
 LR = 1e-4
 DEBUG = False # Set to True for short runs
 
 # Output parameters
-job_id = os.environ.get("SLURM_JOB_ID", "local") # Get the SLURM Job ID (local if sbatch not used)
-OUTPUT_DIR = f"results_{job_id}"
-BEST_MODEL_PATH = os.path.join(OUTPUT_DIR, "decoder_best.pt")
+# OUTPUT_DIR = f"results_{os.environ.get("SLURM_JOB_ID", "local")}"
+OUTPUT_DIR = f"../results/new_arch/ep{EPOCHS}_sp{MAX_SPARSITY}_std{MAX_NOISE_STD}"
+TRAINING_DIR = os.path.join(OUTPUT_DIR, "training")
+VISUAL_DIR = os.path.join(OUTPUT_DIR, "visual")
+BEST_MODEL_PATH = os.path.join(TRAINING_DIR, "decoder_best.pt")
 
-os.makedirs(OUTPUT_DIR, exist_ok=True) # Create the directory for this run
+os.makedirs(TRAINING_DIR, exist_ok=True) # Create the directory for this run
+os.makedirs(VISUAL_DIR, exist_ok=True) # Create the directory for this run
 print(f"All outputs for this run will be saved to: {OUTPUT_DIR}/")
 
 
@@ -144,7 +147,7 @@ for epoch in range(EPOCHS):
 
     decoder.train()
 
-    print(f"Epoch {epoch+1}/{EPOCHS} --> Train: {epoch_train_loss:.4f} | Valid: {epoch_valid_loss:.4f} (in {time.time()-start:.1f}s).")
+    print(f"Epoch {epoch+1}/{EPOCHS} --> Train: {epoch_train_loss:.6f} | Valid: {epoch_valid_loss:.6f} (in {time.time()-start:.1f}s).")
 
     if epoch_valid_loss < best_loss:
         best_loss = epoch_valid_loss
@@ -158,9 +161,9 @@ for epoch in range(EPOCHS):
 plot_losses(
     train_losses=train_losses,
     valid_losses=valid_losses,
-    output_dir=OUTPUT_DIR
+    output_dir=TRAINING_DIR
 )
-# Algo
+# Return the MSE and Pearson values for 10 reconstructed images.
 evaluate_cold_diffusion(
     decoder=decoder, 
     diffusion=diffusion,
@@ -169,7 +172,7 @@ evaluate_cold_diffusion(
     max_batches=10,
     model_path=BEST_MODEL_PATH
 )
-# Algo
+# Plot reconstruction for 5 images in the training & validation datasets.
 plot_cold_diffusion_reconstruction(
     decoder=decoder, 
     diffusion=diffusion,
@@ -178,5 +181,5 @@ plot_cold_diffusion_reconstruction(
     valid_dataset=valid_dataset,
     n_samples=5,
     model_path=BEST_MODEL_PATH,
-    output_dir=OUTPUT_DIR
+    output_dir=VISUAL_DIR
 )
