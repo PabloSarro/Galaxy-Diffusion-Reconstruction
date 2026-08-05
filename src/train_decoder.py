@@ -4,14 +4,13 @@ import torch
 from torch.utils.data import DataLoader
 
 from dataset import GalaxyDataset
-from model import Decoder, cold_diffusion_loss
+from model import Decoder, decoder_loss
 from degradation import Degradation
 from helpers import (
     set_seed, 
     generate_train_valid_datasets, 
     plot_losses, 
     evaluate_cold_diffusion, 
-    plot_cold_diffusion_reconstruction,
     generate_and_plot
 )
 
@@ -28,7 +27,7 @@ DEBUG = False # Set to True for short runs
 
 # Output parameters
 # OUTPUT_DIR = f"results_{os.environ.get("SLURM_JOB_ID", "local")}"
-OUTPUT_DIR = f"../results/no_time"
+OUTPUT_DIR = f"../results/5-MSE+L1"
 TRAINING_DIR = os.path.join(OUTPUT_DIR, "training")
 VISUAL_DIR = os.path.join(OUTPUT_DIR, "visual")
 BEST_MODEL_PATH = os.path.join(TRAINING_DIR, "decoder_best.pt")
@@ -107,7 +106,7 @@ for epoch in range(EPOCHS):
         x0_pred = decoder(x_noised)
 
         # Loss function between predicted map and true image
-        loss = cold_diffusion_loss(x0_pred, x0)
+        loss = decoder_loss(x0_pred, x0)
         
         loss.backward()
         torch.nn.utils.clip_grad_norm_(decoder.parameters(), max_norm=5.0)
@@ -140,7 +139,7 @@ for epoch in range(EPOCHS):
             x_t = degradation.degrade(x0, norms, num_gals)
             x0_pred = decoder(x_t)
 
-            loss = cold_diffusion_loss(x0_pred, x0)
+            loss = decoder_loss(x0_pred, x0)
             total_valid_loss += loss.item()
 
     epoch_valid_loss = total_valid_loss / len(valid_loader)
@@ -164,13 +163,13 @@ plot_losses(
     valid_losses=valid_losses,
     output_dir=TRAINING_DIR
 )
-# Return the MSE and Pearson values for 10 reconstructed images.
+# Return the MSE and Pearson values for 20 reconstructed images.
 evaluate_cold_diffusion(
     decoder=decoder, 
     degradation=degradation,
     device=device,
     valid_loader=valid_loader,
-    max_batches=5,
+    max_batches=20,
     model_path=BEST_MODEL_PATH
 )
 # Plot reconstruction for 5 images in the training & validation datasets.

@@ -132,9 +132,9 @@ class Decoder(nn.Module):
         return self.final_conv(out)
 
 
-def cold_diffusion_loss(pred_x0, true_x0):
+def decoder_loss(pred_x0, true_x0):
     """
     Cold Diffusion: non-Gaussian noise schedule, where the network
     predicts the clean image directly, instead of the added noise.
     """
-    return F.mse_loss(pred_x0, true_x0)
+    return 0.5*F.mse_loss(pred_x0, true_x0) + 0.5*F.l1_loss(pred_x0, true_x0)
