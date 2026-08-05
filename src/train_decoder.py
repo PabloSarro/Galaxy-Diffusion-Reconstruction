@@ -5,20 +5,20 @@ from torch.utils.data import DataLoader
 
 from dataset import GalaxyDataset
 from model import Decoder, cold_diffusion_loss
-from diffusion import Diffusion
+from degradation import Degradation
 from helpers import (
     set_seed, 
     generate_train_valid_datasets, 
     plot_losses, 
     evaluate_cold_diffusion, 
-    plot_cold_diffusion_reconstruction
+    plot_cold_diffusion_reconstruction,
+    generate_and_plot
 )
 
 
 # Cold Diffusion parameters
-TIMESTEPS_DIFF = 1000 # Set to 10 for short runs
-MAX_SPARSITY = 0.20 # 0.25 first training
-MAX_NOISE_STD = 0.005 # 0.01 first training
+SPARSITY = 0.20 # 0.25 first training
+NOISE_STD = 0.005 # 0.01 first training
 
 # Training parameters
 EPOCHS = 50 # Set to 2/3 for long runs
@@ -28,14 +28,20 @@ DEBUG = False # Set to True for short runs
 
 # Output parameters
 # OUTPUT_DIR = f"results_{os.environ.get("SLURM_JOB_ID", "local")}"
-OUTPUT_DIR = f"../results/new_arch/ep{EPOCHS}_sp{MAX_SPARSITY}_std{MAX_NOISE_STD}"
+OUTPUT_DIR = f"../results/no_time"
 TRAINING_DIR = os.path.join(OUTPUT_DIR, "training")
 VISUAL_DIR = os.path.join(OUTPUT_DIR, "visual")
 BEST_MODEL_PATH = os.path.join(TRAINING_DIR, "decoder_best.pt")
 
 os.makedirs(TRAINING_DIR, exist_ok=True) # Create the directory for this run
 os.makedirs(VISUAL_DIR, exist_ok=True) # Create the directory for this run
-print(f"All outputs for this run will be saved to: {OUTPUT_DIR}/")
+
+print("=====================================================")
+print("============= CONFIGURATION FOR THE RUN =============")
+print("=====================================================\n")
+print(f"Sparsity: {SPARSITY} | Noise std: {NOISE_STD}")
+print(f"Epochs: {EPOCHS} | Batch: {BATCH_SIZE} | lr: {LR}")
+print(f"Storage path: {OUTPUT_DIR}\n")
 
 
 set_seed(42)
@@ -62,14 +68,13 @@ valid_loader = DataLoader(
 # Model and Diffusion Setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-diffusion = Diffusion(
-    timesteps=TIMESTEPS_DIFF,
-    max_sparsity=MAX_SPARSITY,
-    max_noise_std=MAX_NOISE_STD,
+degradation = Degradation(
+    sparsity=SPARSITY,
+    noise_std=NOISE_STD,
     device=device
 )
 
-decoder = Decoder(timesteps=TIMESTEPS_DIFF).to(device)
+decoder = Decoder().to(device)
 
 optimizer = torch.optim.AdamW(
     decoder.parameters(),
@@ -95,14 +100,11 @@ for epoch in range(EPOCHS):
         
         optimizer.zero_grad()
 
-        # Sample diffusion timestep
-        t = diffusion.sample_timesteps(x0.size(0))
+        # Degrade the true image
+        x_noised = degradation.degrade(x0, norms, num_gals)
 
-        # Apply forward degradation
-        x_t = diffusion.degrade(x0, norms, num_gals, t)
-
-        # Predict image from degraded + timestep
-        x0_pred = decoder(x_t, t)
+        # Predict image from degraded image.
+        x0_pred = decoder(x_noised)
 
         # Loss function between predicted map and true image
         loss = cold_diffusion_loss(x0_pred, x0)
@@ -114,7 +116,7 @@ for epoch in range(EPOCHS):
         if DEBUG and debug_print:
             print(f"[DEBUG Epoch {epoch+1}]:")
             print(f"x_0 min          = {x0.min().item():.4f}, max={x0.max().item():.4f}, mean={x0.mean().item():.4f}")
-            print(f"x_t min          = {x_t.min().item():.4f}, max={x_t.max().item():.4f}, mean={x_t.mean().item():.4f}")
+            print(f"x_noised min     = {x_noised.min().item():.4f}, max={x_noised.max().item():.4f}, mean={x_noised.mean().item():.4f}")
             print(f"predicted_x0 min = {x0_pred.min().item():.4f}, max={x0_pred.max().item():.4f}")
             print(f"loss             = {loss.item():.4f}")
             debug_print = False # One DEBUG print per epoch.
@@ -135,9 +137,8 @@ for epoch in range(EPOCHS):
             norms = norms.to(device, non_blocking=True)
             num_gals = num_gals.to(device, non_blocking=True)
 
-            t = diffusion.sample_timesteps(x0.size(0))
-            x_t = diffusion.degrade(x0, norms, num_gals, t)
-            x0_pred = decoder(x_t, t)
+            x_t = degradation.degrade(x0, norms, num_gals)
+            x0_pred = decoder(x_t)
 
             loss = cold_diffusion_loss(x0_pred, x0)
             total_valid_loss += loss.item()
@@ -166,16 +167,16 @@ plot_losses(
 # Return the MSE and Pearson values for 10 reconstructed images.
 evaluate_cold_diffusion(
     decoder=decoder, 
-    diffusion=diffusion,
+    degradation=degradation,
     device=device,
     valid_loader=valid_loader,
-    max_batches=10,
+    max_batches=5,
     model_path=BEST_MODEL_PATH
 )
 # Plot reconstruction for 5 images in the training & validation datasets.
-plot_cold_diffusion_reconstruction(
-    decoder=decoder, 
-    diffusion=diffusion,
+generate_and_plot(
+    decoder=decoder,
+    degradation=degradation,
     device=device,
     train_dataset=train_dataset,
     valid_dataset=valid_dataset,
