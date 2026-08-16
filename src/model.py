@@ -132,9 +132,44 @@ class Decoder(nn.Module):
         return self.final_conv(out)
 
 
-def decoder_loss(pred_x0, true_x0):
+def decoder_loss(pred_x0, true_x0, method="MSE", alpha=0):
     """
-    Cold Diffusion: non-Gaussian noise schedule, where the network
-    predicts the clean image directly, instead of the added noise.
+    Computes the reconstruction loss between the predicted and true clean images.
+
+    Methods:
+    - MSE
+    - MSE_MAE
+    - MSE_Grad
+    - Charbonnier
+    - Weighted
     """
-    return 0.5*F.mse_loss(pred_x0, true_x0) + 0.5*F.l1_loss(pred_x0, true_x0)
+
+    if method=="MSE":
+        return F.mse_loss(pred_x0, true_x0)
+    
+    elif method=="MSE_MAE":
+        return 0.5*F.mse_loss(pred_x0, true_x0) + 0.5*F.l1_loss(pred_x0, true_x0) # maybe try different ratios.
+
+    elif method=="MSE_Grad":
+        dx_pred = pred_x0[:, :, :, 1:] - pred_x0[:, :, :, :-1]
+        dx_true = true_x0[:, :, :, 1:] - true_x0[:, :, :, :-1]
+
+        dy_pred = pred_x0[:, :, 1:, :] - pred_x0[:, :, :-1, :]
+        dy_true = true_x0[:, :, 1:, :] - true_x0[:, :, :-1, :]
+
+        grad_loss = F.l1_loss(dx_pred, dx_true) + F.l1_loss(dy_pred, dy_true)
+        mse_loss = F.mse_loss(pred_x0, true_x0)
+
+        return mse_loss + 0.1*grad_loss
+
+    elif method=="Charbonnier":
+        eps = 1e-3
+        diff = pred_x0 - true_x0
+        return torch.mean(torch.sqrt(diff*diff + eps**2))
+
+    elif method=="Weighted":
+        weight = 1 + alpha*torch.abs(true_x0)
+        return torch.mean(weight * (pred_x0-true_x0)**2)
+
+    else:
+        raise ValueError(f"Unknown loss method: {method}")

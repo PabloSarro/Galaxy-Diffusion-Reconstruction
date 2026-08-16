@@ -9,7 +9,7 @@ class Degradation:
         self.noise_std = noise_std
     
 
-    def degrade(self, x0, norms, num_gals, fixed_mask_rand=None, fixed_e1=None, fixed_e2=None):
+    def degrade(self, x0, norms, num_gals):
         """
         Physical degradation operator.
 
@@ -39,12 +39,8 @@ class Degradation:
         # ================ 1. Random masking ================
         # ===================================================
 
-        # If we give the degradation process a fixed mask, apply that one.
-        if fixed_mask_rand is not None:
-            mask_rand = fixed_mask_rand
-        # Else, make it random.
-        else:
-            mask_rand = torch.rand((B, H, W), device=device)
+        # Find random sparsity mask.
+        mask_rand = torch.rand((B, H, W), device=device)
 
         # Mask of removed pixels.
         removed = (mask_rand < sparsity)
@@ -75,14 +71,9 @@ class Degradation:
         N_gal = 1 # Assumption, PENDING TO VERIFY!!
         sigma_pixel = noise_std / np.sqrt(N_gal) # if isinstance(noise_std, torch.Tensor) else noise_std / np.sqrt(N_gal)
 
-        # If we give the degradation process a fixed noise schedule, assign that one.
-        if (fixed_e1 is not None) and (fixed_e2 is not None):
-            e1 = fixed_e1 * sigma_pixel
-            e2 = fixed_e2 * sigma_pixel
-        # Otherwise, make it random.
-        else:
-            e1 = torch.randn((B, H, W), device=device) * sigma_pixel
-            e2 = torch.randn((B, H, W), device=device) * sigma_pixel
+        # Random noise schedule.
+        e1 = torch.randn((B, H, W), device=device) * sigma_pixel
+        e2 = torch.randn((B, H, W), device=device) * sigma_pixel
 
         eps_s = e1 + 1j * e2
         eps_obs = g.clone()

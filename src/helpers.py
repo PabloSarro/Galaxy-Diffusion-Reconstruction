@@ -4,6 +4,7 @@ import torch
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import torch.nn.functional as F
 
 
 # Deterministic Runs for Better Comparison
@@ -49,7 +50,7 @@ def generate_train_valid_datasets(dataset, frac=0.8):
 
 
 # Loss Plotting
-def plot_losses(train_losses, valid_losses, output_dir):
+def plot_losses(train_losses, valid_losses, loss_function, output_dir):
     epochs = len(train_losses)
 
     plt.figure(figsize=(6,4))
@@ -59,8 +60,9 @@ def plot_losses(train_losses, valid_losses, output_dir):
 
     plt.legend(loc="best")
     plt.xlabel("Epoch")
-    plt.ylabel("Cold Diffusion Loss (MSE)")
-    plt.title("Training and Validation Losses")
+    plt.ylabel("Degradation Loss")
+    plt.title(f"Training and Validation Losses ({loss_function})")
+    plt.yscale("log")
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "losses_train_valid.png"), dpi=200)
@@ -203,7 +205,67 @@ def generate_and_plot(decoder, degradation, device, train_dataset, valid_dataset
             plt.savefig(filepath, dpi=200)
             plt.close()
 
-
     end = time.time()
     total_plots = len(datasets) * n_samples
     print(f"Plotting all {total_plots} reconstructed images took {end-start:.1f}s.")
+
+
+def shear_to_mass(shear_map, pad_size=100):
+    """
+    Converts a batch of shear maps to mass maps (convergence kappa)
+    using the Kaiser-Squires inversion method.
+    
+    Args:
+        shear_map: Tensor of shape (B, 2, H, W) where channel 0 is g1 and 1 is g2.
+        pad_size: Integer, amount of zero-padding to add to each side to mitigate 
+                  Fourier periodic boundary artifacts.
+                  
+    Returns:
+        kappa_map: Tensor of shape (B, 1, H, W) representing the mass map.
+    """
+    B, C, H, W = shear_map.shape
+    assert C == 2, "Input must have exactly 2 channels (g1, g2)"
+    
+    # 1. Zero-pad the shear maps to avoid periodic boundary artifacts in FFT
+    # Pad order is (left, right, top, bottom)
+    g_padded = F.pad(shear_map, (pad_size, pad_size, pad_size, pad_size), mode='constant', value=0.0)
+    
+    B_p, C_p, H_p, W_p = g_padded.shape
+    g1 = g_padded[:, 0, :, :]
+    g2 = g_padded[:, 1, :, :]
+    
+    # 2. Compute 2D FFT of the padded shear maps
+    g1_hat = torch.fft.fftn(g1, dim=(-2, -1))
+    g2_hat = torch.fft.fftn(g2, dim=(-2, -1))
+    
+    # 3. Create the Fourier space frequency grid (k_x, k_y)
+    kx = torch.fft.fftfreq(W_p, device=shear_map.device)
+    ky = torch.fft.fftfreq(H_p, device=shear_map.device)
+    
+    # Create a meshgrid for kx and ky ('ij' indexing prevents axis swapping)
+    ky_grid, kx_grid = torch.meshgrid(ky, kx, indexing='ij')
+    
+    k2 = kx_grid**2 + ky_grid**2
+    
+    # Avoid division by zero at the DC component (k=0)
+    k2[0, 0] = 1.0  
+    
+    # 4. Compute the Kaiser-Squires Fourier space filters
+    D1 = (kx_grid**2 - ky_grid**2) / k2
+    D2 = (2.0 * kx_grid * ky_grid) / k2
+    
+    # Set the mean mass (k=0) to 0
+    D1[0, 0] = 0.0
+    D2[0, 0] = 0.0
+    
+    # 5. Apply the inversion relation: kappa_hat = D1 * g1_hat + D2 * g2_hat
+    kappa_hat = D1.unsqueeze(0) * g1_hat + D2.unsqueeze(0) * g2_hat
+    
+    # 6. Inverse FFT to get back to spatial domain (we only take the real part)
+    kappa_padded = torch.fft.ifftn(kappa_hat, dim=(-2, -1)).real
+    
+    # 7. Crop back to the original size
+    kappa = kappa_padded[:, pad_size:-pad_size, pad_size:-pad_size]
+    
+    # Add the single channel dimension back (B, 1, H, W)
+    return kappa.unsqueeze(1)

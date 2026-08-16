@@ -14,20 +14,32 @@ from helpers import (
     generate_and_plot
 )
 
+import argparse
 
-# Cold Diffusion parameters
-SPARSITY = 0.20 # 0.25 first training
-NOISE_STD = 0.005 # 0.01 first training
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--loss", type=str, default="MSE", choices=["MSE", "MSE_MAE", "MSE_Grad", "Charbonnier", "Weighted"])
+parser.add_argument("--alpha",type=float, default=1.0)
+
+args = parser.parse_args()
+
+
+# Degradation parameters
+SPARSITY = 0.70
+NOISE_STD = 0.005 # Still to check what the 0.26 represents!
 
 # Training parameters
-EPOCHS = 50 # Set to 2/3 for long runs
+EPOCHS = 50 # Set to 2/3 for short runs
 BATCH_SIZE = 16
 LR = 1e-4
 DEBUG = False # Set to True for short runs
+LOSS_METHOD = args.loss
+ALPHA = args.alpha
 
 # Output parameters
-# OUTPUT_DIR = f"results_{os.environ.get("SLURM_JOB_ID", "local")}"
-OUTPUT_DIR = f"../results/5-MSE+L1"
+PREFIX = "../results/5-low_resolution"
+OUTPUT_DIR = os.path.join(PREFIX, LOSS_METHOD)
+
 TRAINING_DIR = os.path.join(OUTPUT_DIR, "training")
 VISUAL_DIR = os.path.join(OUTPUT_DIR, "visual")
 BEST_MODEL_PATH = os.path.join(TRAINING_DIR, "decoder_best.pt")
@@ -40,6 +52,7 @@ print("============= CONFIGURATION FOR THE RUN =============")
 print("=====================================================\n")
 print(f"Sparsity: {SPARSITY} | Noise std: {NOISE_STD}")
 print(f"Epochs: {EPOCHS} | Batch: {BATCH_SIZE} | lr: {LR}")
+print(f"Loss: {LOSS_METHOD} | Alpha: {ALPHA}")
 print(f"Storage path: {OUTPUT_DIR}\n")
 
 
@@ -106,7 +119,7 @@ for epoch in range(EPOCHS):
         x0_pred = decoder(x_noised)
 
         # Loss function between predicted map and true image
-        loss = decoder_loss(x0_pred, x0)
+        loss = decoder_loss(x0_pred, x0, method=LOSS_METHOD, alpha=ALPHA)
         
         loss.backward()
         torch.nn.utils.clip_grad_norm_(decoder.parameters(), max_norm=5.0)
@@ -139,7 +152,7 @@ for epoch in range(EPOCHS):
             x_t = degradation.degrade(x0, norms, num_gals)
             x0_pred = decoder(x_t)
 
-            loss = decoder_loss(x0_pred, x0)
+            loss = decoder_loss(x0_pred, x0, method=LOSS_METHOD, alpha=ALPHA)
             total_valid_loss += loss.item()
 
     epoch_valid_loss = total_valid_loss / len(valid_loader)
@@ -161,6 +174,7 @@ for epoch in range(EPOCHS):
 plot_losses(
     train_losses=train_losses,
     valid_losses=valid_losses,
+    loss_function=LOSS_METHOD,
     output_dir=TRAINING_DIR
 )
 # Return the MSE and Pearson values for 20 reconstructed images.

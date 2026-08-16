@@ -8,10 +8,12 @@ envSummer1/
 old_src/
 old_results/
 results/
+tests/
 *.job
 *.pt
 
 # Logs and Python cache
+logs/
+__pycache__/
 *.log
 *.err
-__pycache__/
