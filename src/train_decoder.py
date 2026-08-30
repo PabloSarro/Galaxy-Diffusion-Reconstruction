@@ -113,7 +113,7 @@ for epoch in range(EPOCHS):
         optimizer.zero_grad()
 
         # Degrade the true image
-        x_noised = degradation.degrade(x0, norms, num_gals)
+        x_noised, _ = degradation.degrade(x0, norms, num_gals)
 
         # Predict image from degraded image.
         x0_pred = decoder(x_noised)
@@ -149,7 +149,7 @@ for epoch in range(EPOCHS):
             norms = norms.to(device, non_blocking=True)
             num_gals = num_gals.to(device, non_blocking=True)
 
-            x_t = degradation.degrade(x0, norms, num_gals)
+            x_t, _ = degradation.degrade(x0, norms, num_gals)
             x0_pred = decoder(x_t)
 
             loss = decoder_loss(x0_pred, x0, method=LOSS_METHOD, alpha=ALPHA)

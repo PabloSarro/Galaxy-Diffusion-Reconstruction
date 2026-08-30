@@ -1,14 +1,18 @@
 # Initial dataset exploration
 EDA/
 
-# Virtual environment
+# Virtual environment and dependencies
 envSummer1/
+envSummer1_conda/
+PyTorch-Network-Loader/
 
 # Results and model checkpoints
 old_src/
 old_results/
 results/
 tests/
+*.pkl
+*.sh
 *.job
 *.pt
 
@@ -17,3 +21,5 @@ logs/
 __pycache__/
 *.log
 *.err
+*.txt
+*.json

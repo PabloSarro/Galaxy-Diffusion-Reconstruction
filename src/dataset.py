@@ -21,6 +21,7 @@ class GalaxyDataset(Dataset):
         self.norms = []
         self.num_gals = []
         self.cross_sections = []
+        self.targets = []
 
         files = glob.glob(
             os.path.join(data_folder, "*.pkl")
@@ -47,11 +48,38 @@ class GalaxyDataset(Dataset):
             sigma = metadata["label"][0]
             self.cross_sections.extend([sigma] * n_samples)
 
+            # Store cross-section per image.
+            filename = os.path.basename(file).lower()
+            if "darkskies" in filename:
+                if np.isclose(sigma, 0.0, atol=1e-2) or np.isclose(sigma, 0.01, atol=1e-2):
+                    class_idx = 0
+                elif np.isclose(sigma, 0.1, atol=1e-2):
+                    class_idx = 2
+                elif np.isclose(sigma, 0.2, atol=1e-2):
+                    class_idx = 4
+                else:
+                    raise ValueError(f"Unknown DARKSKIES sigma: {sigma} in {filename}")
+                    
+            elif "bahamas" in filename:
+                if np.isclose(sigma, 0.0, atol=1e-2) or np.isclose(sigma, 0.01, atol=1e-2):
+                    class_idx = 1
+                elif np.isclose(sigma, 0.1, atol=1e-2):
+                    class_idx = 3
+                elif np.isclose(sigma, 0.3, atol=1e-2):
+                    class_idx = 5
+                elif np.isclose(sigma, 1.0, atol=1e-2):
+                    class_idx = 6
+                else:
+                    raise ValueError(f"Unknown BAHAMAS sigma: {sigma} in {filename}")
+
+            self.targets.extend([class_idx] * n_samples)
+
         # Merge all files
         self.images = np.concatenate(self.images, axis=0)
         self.norms = np.concatenate(self.norms, axis=0)
         self.num_gals = np.concatenate(self.num_gals, axis=0)
         self.cross_sections = np.array(self.cross_sections)
+        self.targets = np.array(self.targets)
 
     def __len__(self):
         return len(self.images)
@@ -71,3 +99,6 @@ class GalaxyDataset(Dataset):
    
     def get_cross_section(self, idx):
         return self.cross_sections[idx]
+
+    def get_target(self, idx):
+        return self.targets[idx]

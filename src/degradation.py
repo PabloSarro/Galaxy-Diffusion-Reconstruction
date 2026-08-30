@@ -97,4 +97,6 @@ class Degradation:
         xt[:, 0] = (g1_obs-a) / (b-a)
         xt[:, 1] = (g2_obs-a) / (b-a)
 
-        return xt
+        # Return degraded image and masks of valid pixels.
+        valid_masks = ~removed
+        return xt, valid_masks

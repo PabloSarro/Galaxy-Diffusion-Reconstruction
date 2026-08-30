@@ -21,8 +21,6 @@ def set_seed(seed=42):
 
 # Dataset Splitting
 def generate_train_valid_datasets(dataset, frac=0.8):
-    start = time.time()
-
     all_indices = np.arange(len(dataset))
     cross_sections = dataset.cross_sections
 
@@ -42,9 +40,6 @@ def generate_train_valid_datasets(dataset, frac=0.8):
 
     train_dataset = torch.utils.data.Subset(dataset, train_indices)
     valid_dataset = torch.utils.data.Subset(dataset, valid_indices)
-
-    end = time.time()
-    print(f"Train+Valid datasets generated (in {end-start:.5f}s).")
     
     return train_dataset, valid_dataset
 
@@ -94,7 +89,7 @@ def evaluate_cold_diffusion(decoder, degradation, device, valid_loader, max_batc
             num_gals = num_gals.to(device)
 
             # Generate fully degraded observation at t=1000.
-            xT = degradation.degrade(x0, norms, num_gals)
+            xT, _ = degradation.degrade(x0, norms, num_gals)
 
             # Reconstructed image
             x0_direct = decoder(xT)
@@ -140,7 +135,7 @@ def evaluate_cold_diffusion(decoder, degradation, device, valid_loader, max_batc
     print(f"MSE     : {np.mean(identity_mse_values):.6f}")
     print(f"Pearson : {np.mean(identity_corr_values):.4f}")
 
-    print("\n2. Direct Prediction: xT -> \hat[x0]")
+    print("\n2. Direct Prediction: xT -> hat[x0]")
     print(f"MSE     : {np.mean(direct_mse_values):.6f}")
     print(f"Pearson : {np.mean(direct_corr_values):.4f}")
 
@@ -171,7 +166,7 @@ def generate_and_plot(decoder, degradation, device, train_dataset, valid_dataset
             with torch.no_grad():
 
                 # Fully degraded image
-                xT = degradation.degrade(x0, norms, num_gals)
+                xT, _ = degradation.degrade(x0, norms, num_gals)
 
                 # Reconstruction
                 x_direct = decoder(xT)
