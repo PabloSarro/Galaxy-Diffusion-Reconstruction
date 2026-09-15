@@ -126,15 +126,30 @@ def evaluate_and_plot(preds_dict, title, output_dir):
     print(f"  -> Metrics: Acc: {acc:.3f} | Prec: {prec:.3f} | Rec: {rec:.3f} | F1: {f1:.3f}")
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--decoder_path", type=str, default="../results/5-low_resolution/MSE/training/decoder_best.pt")
+parser.add_argument("--classifier_path", type=str, default="../results/network_v8_1.pth")
+parser.add_argument("--data_folder", type=str, default="../data-full/")
+parser.add_argument("--output_dir", type=str, default=None,
+                     help="Defaults to a subfolder under ../results/classification/ named after the decoder's experiment/loss.")
+args = parser.parse_args()
+
 start_total = time.time()
 
 # ==========================================
 # 1. SET PATHS & LOCAL VARIABLES
 # ==========================================
-CLASSIFIER_PATH = "../results/network_v8_1.pth"
-DECODER_PATH = "../results/5-low_resolution/MSE/training/decoder_best.pt"
-DATA_FOLDER = "../data-full/"
-OUTPUT_DIR = "../results/classification/"
+CLASSIFIER_PATH = args.classifier_path
+DECODER_PATH = args.decoder_path
+DATA_FOLDER = args.data_folder
+
+if args.output_dir is not None:
+    OUTPUT_DIR = args.output_dir
+else:
+    # e.g. ../results/6-no_shape_noise/MSE/training/decoder_best.pt -> "6-no_shape_noise_MSE"
+    decoder_parts = os.path.normpath(DECODER_PATH).split(os.sep)
+    run_tag = "_".join(decoder_parts[-4:-2]) if len(decoder_parts) >= 4 else "run"
+    OUTPUT_DIR = os.path.join("../results/classification/", run_tag)
 
 SPARSITY = 0.70
 NOISE_STDS = [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.22, 0.3]  # Noise levels for degradation
