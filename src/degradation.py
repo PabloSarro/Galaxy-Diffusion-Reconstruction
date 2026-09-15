@@ -3,7 +3,7 @@ import numpy as np
 
 class Degradation:
 
-    def __init__(self, sparsity=0.25, noise_std=0.01, device="cuda"):
+    def __init__(self, sparsity=0.70, noise_std=0.01, device="cuda"):
         self.device = device
         self.sparsity = sparsity
         self.noise_std = noise_std
@@ -68,7 +68,7 @@ class Degradation:
         # Pixels containing galaxies
         valid_pixels = (ng > 0)
         # Intrinsic ellipticity dispersion
-        N_gal = 1 # Assumption, PENDING TO VERIFY!!
+        N_gal = 1
         sigma_pixel = noise_std / np.sqrt(N_gal) # if isinstance(noise_std, torch.Tensor) else noise_std / np.sqrt(N_gal)
 
         # Random noise schedule.

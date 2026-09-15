@@ -62,13 +62,24 @@ def knn_reconstruct_batch(x_noised, masks):
     return reconstructed
 
 
+def chi_transform(red_shear):
+    """
+    Transforms noise-free reduced shear maps to chi maps.
+    Assumes input shape is (N, C, H, W) where C is the channel dimension.
+    """
+    return 2 * red_shear / (1 + (red_shear ** 2).sum(axis=1, keepdims=True))
+
+
 def evaluate_and_plot(preds_dict, title, output_dir):
     """Runs inference, calculates metrics, and plots the confusion matrix."""
     print(f"\nEvaluating: {title}...")
     
     # 1. Round targets to fix floating point drift (e.g., 0.099999 -> 0.1)
-    true_labels = np.array(preds_dict['targets']).astype(int)
-    pred_labels = np.argmax(preds_dict['preds'], axis=1).astype(int)
+    true_labels = np.round(preds_dict['targets']).astype(int)
+    pred_labels = np.round(np.argmax(preds_dict['preds'], axis=1)).astype(int)
+    print(f"\nTrue Labels: {true_labels[235:245]}")
+    print(f"Predicted Labels: {pred_labels[235:245]}")
+    print(f"Unique target values: {np.unique(true_labels)}")
 
     # ==========================
     #    7x7 CONFUSION MATRIX
@@ -87,15 +98,15 @@ def evaluate_and_plot(preds_dict, title, output_dir):
     )
     
     # 3. Create Confusion Matrix (Forcing a 7x7 grid since the model has 7 classes)
-    cm = confusion_matrix(true_labels, pred_labels, labels=np.arange(7))
+    cm = confusion_matrix(true_labels, pred_labels, labels=np.arange(7), normalize='true')
     
     # 4. Plotting
     fig, ax = plt.subplots(figsize=(7,8))
     CLASS_NAMES = ["DARKSKIES-0", "BAHAMAS-0", "DARKSKIES-0.1", "BAHAMAS-0.1", 
                    "DARKSKIES-0.2", "BAHAMAS-0.3", "BAHAMAS-1"]
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax, cbar=False, 
+    sns.heatmap(cm, annot=True, fmt='.2f', cmap='Blues', ax=ax, cbar=False, 
                 xticklabels=CLASS_NAMES, yticklabels=CLASS_NAMES)
-    
+
     ax.set_title(title, fontsize=14, pad=15)
     ax.set_xlabel('Predictions', fontsize=12)
     ax.set_ylabel('Targets', fontsize=12)
@@ -103,20 +114,15 @@ def evaluate_and_plot(preds_dict, title, output_dir):
     plt.yticks(rotation=0)
     
     # Add metrics text box below the plot
-    metrics_text = (
-        f"Accuracy:  {acc:.3f}\n"
-        f"Precision: {prec:.3f}\n"
-        f"Recall:    {rec:.3f}\n"
-        f"F1 Score:  {f1:.3f}"
-    )
-    plt.figtext(0.5, -0.12, metrics_text, ha='center', fontsize=12, bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.5'))
+    metrics_text = (f"Accuracy: {acc:.3f}, Precision: {prec:.3f}, Recall: {rec:.3f}, F1 Score: {f1:.3f}")
+    plt.figtext(0.4, -0.08, metrics_text, ha='center', fontsize=12)
     
     # Save the figure
     filepath = os.path.join(output_dir, f"{title}.png")
     plt.savefig(filepath, bbox_inches="tight", dpi=300)
     plt.close()
     
-    print(f"  -> Saved plot: {title}.png")
+    print(f"\n  -> Saved plot: {title}.png")
     print(f"  -> Metrics: Acc: {acc:.3f} | Prec: {prec:.3f} | Rec: {rec:.3f} | F1: {f1:.3f}")
 
 
@@ -131,10 +137,13 @@ DATA_FOLDER = "../data-full/"
 OUTPUT_DIR = "../results/classification/"
 
 SPARSITY = 0.70
-NOISE_STD = 0.005
+NOISE_STDS = [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.22, 0.3]  # Noise levels for degradation
 BATCH_SIZE = 32
-# Set to -1 to use the full validation split (720 per class), or a positive integer (e.g., 100) for a subset
 N_CLASS = -1
+# How to set N_CLASS:
+# -2: Use full dataset (1200 per DARKSKIES class, 3600 per BAHAMAS class)
+# -1: Use full validation split (240 per DARKSKIES class, 720 per BAHAMAS class)
+# Any positive integer (e.g. 100) for a subset of the validation split (e.g. 100 per class)
 
 TARGET_TO_CLASS = {
     0: "DARKSKIES-0",
@@ -165,128 +174,128 @@ decoder.load_state_dict(torch.load(DECODER_PATH, map_location=device))
 decoder.eval()
 print(f"    Done ({time.time() - start:.2f}s)")
 
-print(f"Loading degradation with: sp={SPARSITY}, std={NOISE_STD}")
+print(f"Loading degradation with: sp={SPARSITY}, stds in [{NOISE_STDS}]")
 start = time.time()
-degradation = Degradation(sparsity=SPARSITY, noise_std=NOISE_STD, device=device)
+degradations = []
+for NOISE_STD in NOISE_STDS:
+    degradation = Degradation(sparsity=SPARSITY, noise_std=NOISE_STD, device=device)
+    degradations.append(degradation)
 print(f"    Done ({time.time() - start:.2f}s)")
 
 print(f"Loading data from: {DATA_FOLDER}")
 start = time.time()
 dataset = GalaxyDataset(data_folder=DATA_FOLDER)
-_, valid_dataset = generate_train_valid_datasets(dataset, frac=0.8)
+if N_CLASS != -2:
+    _, valid_dataset = generate_train_valid_datasets(dataset, frac=0.8)
+    indices_array = np.array(valid_dataset.indices)
+else:
+    # dataset doesn't have indices attribute:
+    indices_array = np.arange(len(dataset))
 
-val_indices_array = np.array(valid_dataset.indices)
-val_targets = dataset.targets[val_indices_array]
+targets = dataset.targets[indices_array]
 
 # Extract exactly N indices for each unique target
-if N_CLASS == -1:
-    print("    Using the FULL dataset of 720 samples per class.")
-    valid_indices = val_indices_array
+if N_CLASS == -2:
+    print("    Using the full dataset: 1200/3600 samples per class with DARKSKIES/BAHAMAS.")
+    indices = indices_array
+elif N_CLASS == -1:
+    print("    Using the full validation split: 240/720 samples per class with DARKSKIES/BAHAMAS.")
+    indices = indices_array
 else:
-    print(f"    Using a balanced subset of {N_CLASS} samples per class.")
+    print(f"    Using a balanced subset: {N_CLASS} validation samples per class.")
     subset_indices = []
     for targ in np.unique(dataset.targets):
-        matching_indices = val_indices_array[val_targets == targ]
+        matching_indices = indices_array[targets == targ]
         if len(matching_indices) < N_CLASS:
             print(f"Warning: Only {len(matching_indices)} samples available for target={targ}")
             subset_indices.extend(matching_indices)
         else:
             subset_indices.extend(matching_indices[:N_CLASS])
 
-    valid_indices = np.array(subset_indices)
+    indices = np.array(subset_indices)
 
-valid_subset = torch.utils.data.Subset(dataset, valid_indices)
-valid_loader = DataLoader(valid_subset, batch_size=BATCH_SIZE, shuffle=False, pin_memory=True)
+subset = torch.utils.data.Subset(dataset, indices)
+loader = DataLoader(subset, batch_size=BATCH_SIZE, shuffle=False, pin_memory=True)
 
 # Un-normalise to get original reduced shear values.
-base_images_raw = dataset.images[valid_indices]
-base_norms = dataset.norms[valid_indices]
+base_images_norm = dataset.images[indices]
+base_norms = dataset.norms[indices]
 a = base_norms[:, 0, np.newaxis, np.newaxis, np.newaxis]
 b = base_norms[:, 1, np.newaxis, np.newaxis, np.newaxis]
-base_images = base_images_raw * (b-a) + a
-# base_images = chi_transform(base_images)  # <-- ADD THIS
+base_images = base_images_norm * (b-a) + a
 
-# ===============================
-# IF IMGS NEED TO STAY NORMALISED:
-# ===============================
-# base_images = dataset.images[valid_indices]
+# Apply the non-linear transformation (model takes images as chi maps).
+base_images = chi_transform(base_images)
 
-base_targets = dataset.targets[valid_indices]
+base_targets = dataset.targets[indices]
 sample_ids = np.arange(len(base_targets))
 
 print(f"    Done ({time.time() - start:.2f}s)")
 
-all_vals, all_counts = np.unique(dataset.targets, return_counts=True)
-print("\n================ DATASET LABEL COUNTS ================")
-print("Full Dataset Label Distribution:")
-for val, count in zip(all_vals, all_counts):
-    print(f"  Class {TARGET_TO_CLASS[val]} (target {val}): {count} total (Expected 1200/3600)")
+# # SANITY CHECK: Print number of samples per class.
+# all_vals, all_counts = np.unique(dataset.targets, return_counts=True)
+# print("\nDataset Label Counts")
+# print("  Full Dataset:")
+# for val, count in zip(all_vals, all_counts):
+#     print(f"    Class {TARGET_TO_CLASS[val]} (target {val}): {count} total (Expected 1200/3600)")
 
-if N_CLASS == -1:
-    valid_vals, valid_counts = np.unique(val_targets, return_counts=True)
-    print("\nFull Validation Set Distribution (20\\% split):")
-    for val, count in zip(valid_vals, valid_counts):
-        print(f"  Class {TARGET_TO_CLASS[val]} (target {val}): {count} samples (Expected 240/720)")
-else:
-    sub_vals, sub_counts = np.unique(base_targets, return_counts=True)
-    print(f"\nSubset for Evaluation ({N_CLASS} samples):")
-    for val, count in zip(sub_vals, sub_counts):
-        print(f"  Class {TARGET_TO_CLASS[val]} (target {val}): {count} samples")
-
-print("\nUnique targets detected in dataset:", np.unique(dataset.targets))
-for targ in np.unique(dataset.targets):
-    matches = val_indices_array[val_targets == targ]
-    print(f"Target {targ}: found {len(matches)} matching valid samples")
-
+# valid_vals, valid_counts = np.unique(val_targets, return_counts=True)
+# print("\n  Evaluation Dataset:")
+# for val, count in zip(valid_vals, valid_counts):
+#     print(f"    Class {TARGET_TO_CLASS[val]} (target {val}): {count} samples (Expected 240/720)")
 
 # ===============================
 # 3. GENERATE RECONSTRUCTIONS
 # ===============================
-print("\nGenerating Noisy, U-Net, and kNN datasets...")
+print("Generating Noisy, U-Net, and kNN datasets...")
 start = time.time()
 
-# noisy_images_list = []
-# unet_images_list = []
-# knn_images_list = []
+noisy_images_list = []
+unet_images_list = [[] for _ in range(len(degradations))]
+knn_images_list = []
 
-# with torch.no_grad():
-#     for x0, norms, num_gals in valid_loader:
-#         x0 = x0.to(device, non_blocking=True)
-#         norms = norms.to(device, non_blocking=True)
-#         num_gals = num_gals.to(device, non_blocking=True)
+with torch.no_grad():
+    for x0, norms, num_gals in loader:
+        x0 = x0.to(device, non_blocking=True)
+        norms = norms.to(device, non_blocking=True)
+        num_gals = num_gals.to(device, non_blocking=True)
+
+        # 1. Noisy images
+        x_noised_0, masks_0 = degradations[0].degrade(x0, norms, num_gals)
+        noisy_images_list.append(x_noised_0.cpu().numpy())       
         
-#         # 1. Degrade
-#         x_noised, valid_masks = degradation.degrade(x0, norms, num_gals)
-#         noisy_images_list.append(x_noised.cpu().numpy())
+        for idx, degradation in enumerate(degradations):
+            # 2. U-Net Reconstruct for every degradation
+            x_noised, masks = degradation.degrade(x0, norms, num_gals)
+            x0_pred = decoder(x_noised)
+            unet_images_list[idx].append(x0_pred.cpu().numpy())
         
-#         # 2. U-Net Reconstruct
-#         x0_pred = decoder(x_noised)
-#         unet_images_list.append(x0_pred.cpu().numpy())
-        
-#         # 3. kNN Reconstruct
-#         x_knn = knn_reconstruct_batch(x_noised.cpu().numpy(), valid_masks.cpu().numpy())
-#         knn_images_list.append(x_knn)
+        # 3. kNN Reconstruct
+        x_knn = knn_reconstruct_batch(x_noised_0.cpu().numpy(), masks_0.cpu().numpy())
+        knn_images_list.append(x_knn)
 
-# # Concatenate lists into large numpy arrays
-# noisy_images = np.concatenate(noisy_images_list, axis=0)
-# unet_images = np.concatenate(unet_images_list, axis=0)
-# knn_images = np.concatenate(knn_images_list, axis=0)
+# Concatenate lists into large numpy arrays
+noisy_images = np.concatenate(noisy_images_list, axis=0)
+for idx in range(len(degradations)):
+    unet_images_list[idx] = np.concatenate(unet_images_list[idx], axis=0)
+knn_images = np.concatenate(knn_images_list, axis=0)
 
-# noisy_images = chi_transform(noisy_images)  # <-- ADD THIS
-# unet_images = chi_transform(unet_images)    # <-- ADD THIS
-# knn_images = chi_transform(knn_images)      # <-- ADD THIS
+# Un-normalise
+noisy_images = noisy_images * (b-a) + a
+for idx in range(len(degradations)):
+    unet_images_list[idx] = unet_images_list[idx] * (b-a) + a
+knn_images = knn_images * (b-a) + a
 
-# # Un-normalise
-# # IS THIS NEEDED AGAIN? RAW_IMAGES IS ALREADY UN-NORMALISED!
-# noisy_images = noisy_images * (b-a) + a
-# unet_images = unet_images * (b-a) + a
-# knn_images = knn_images * (b-a) + a
+noisy_images = chi_transform(noisy_images)
+for idx in range(len(degradations)):
+    unet_images_list[idx] = chi_transform(unet_images_list[idx])
+knn_images = chi_transform(knn_images)
 
 image_sets = {
-    "1_noise_free": base_images,
-    # "2_noisy_imgs": noisy_images,
-    # "3_unet_reconst": unet_images,
-    # "4_kNN_reconst": knn_images
+    "1. Noise-Free": base_images,
+    "2. Noisy": noisy_images,
+    **{f"3. U-Net-degr{NOISE_STDS[idx]}": unet_images_list[idx] for idx in range(len(NOISE_STDS))},
+    "4. kNN": knn_images
 }
 
 print(f"    Done ({time.time() - start:.2f}s)")
@@ -296,9 +305,9 @@ print(f"    Done ({time.time() - start:.2f}s)")
 # ===========================
 all_predictions = {}
 
-print(f"\nEvaluation loop starting... (Results saving to {OUTPUT_DIR})")
+print(f"\n======== Evaluation loop starting... (Results saving to {OUTPUT_DIR}) ========")
 for set_name, raw_shears in image_sets.items():
-    print(f"\n================ Predicting: {set_name} ================")
+    print(f"\n------ Predicting: {set_name} ------")
     start = time.time()
     
     # 1. Instantiate CustomDataset
@@ -318,17 +327,6 @@ for set_name, raw_shears in image_sets.items():
     # 4. Generate predictions
     preds = arch.predict(test_loader)
     all_predictions[set_name] = preds
-
-    # 5. Inspect returned structure and classes
-    print(f"Keys in preds: {preds.keys()}")
-    
-    # Extract discrete class predictions
-    pred_indices = np.argmax(preds['preds'], axis=1)
-    unique_target_vals = np.unique(preds['targets'])
-    
-    print(f"Sample true targets: {preds['targets'][:5]}")
-    print(f"Sample pred indices: {pred_indices[:5]}")
-    print(f"Unique target values present: {unique_target_vals}")
 
     evaluate_and_plot(preds, set_name, OUTPUT_DIR)
     print(f"  Done ({time.time() - start:.2f}s)")

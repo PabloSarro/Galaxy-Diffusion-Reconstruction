@@ -22,21 +22,21 @@ def set_seed(seed=42):
 # Dataset Splitting
 def generate_train_valid_datasets(dataset, frac=0.8):
     all_indices = np.arange(len(dataset))
-    cross_sections = dataset.cross_sections
+    targets = dataset.targets
 
     train_indices = []
     valid_indices = []
 
-    for sigma in np.unique(cross_sections):
+    for targ in np.unique(targets):
 
-        # All simulations with this cross-section
-        sigma_indices = all_indices[cross_sections == sigma]
+        # All simulations with this target
+        target_indices = all_indices[targets == targ]
 
         # Shuffle within this cross-section
-        np.random.shuffle(sigma_indices)
-        n_train_sigma = int(frac * len(sigma_indices))
-        train_indices.extend(sigma_indices[:n_train_sigma])
-        valid_indices.extend(sigma_indices[n_train_sigma:])
+        np.random.shuffle(target_indices)
+        n_train_targ = int(frac * len(target_indices))
+        train_indices.extend(target_indices[:n_train_targ])
+        valid_indices.extend(target_indices[n_train_targ:])
 
     train_dataset = torch.utils.data.Subset(dataset, train_indices)
     valid_dataset = torch.utils.data.Subset(dataset, valid_indices)

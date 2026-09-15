@@ -26,18 +26,18 @@ args = parser.parse_args()
 
 # Degradation parameters
 SPARSITY = 0.70
-NOISE_STD = 0.005 # Still to check what the 0.26 represents!
+NOISE_STD = 0.22 # 0.005 too optimistic # 0 to try
 
 # Training parameters
-EPOCHS = 50 # Set to 2/3 for short runs
-BATCH_SIZE = 16
-LR = 1e-4
+EPOCHS = 200 # Set to 2/3 for short runs
+BATCH_SIZE = 32
+LR = 5e-4
 DEBUG = False # Set to True for short runs
 LOSS_METHOD = args.loss
 ALPHA = args.alpha
 
 # Output parameters
-PREFIX = "../results/5-low_resolution"
+PREFIX = "../results/7-with_shape_noise"
 OUTPUT_DIR = os.path.join(PREFIX, LOSS_METHOD)
 
 TRAINING_DIR = os.path.join(OUTPUT_DIR, "training")
@@ -59,7 +59,7 @@ print(f"Storage path: {OUTPUT_DIR}\n")
 set_seed(42)
 
 # Dataset
-dataset = GalaxyDataset(data_folder="/scratch/izar/sarro/BAHAMAS-data-nonsparse/")
+dataset = GalaxyDataset(data_folder="../data-full/")
 
 train_dataset, valid_dataset = generate_train_valid_datasets(dataset, frac=0.8)
 
@@ -68,17 +68,20 @@ train_loader = DataLoader(
     batch_size=BATCH_SIZE,
     shuffle=True,
     generator=torch.Generator().manual_seed(42), # Done to provide the optimizer with the same batch order across different runs, for better comparison.
-    pin_memory=True
+    pin_memory=True,
+    num_workers=1
 )
 valid_loader = DataLoader(
     valid_dataset,
     batch_size=BATCH_SIZE,
     shuffle=False, # No generator needed here, since there is no shuffle, and hence indices will be: [0, 1, 2, ...]
-    pin_memory=True
+    pin_memory=True,
+    num_workers=1
 )
 
 # Model and Diffusion Setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"USING DEVICE: {device}")
 
 degradation = Degradation(
     sparsity=SPARSITY,
@@ -99,9 +102,9 @@ train_losses = []
 valid_losses = []
 best_loss = float("inf")
 
-start = time.time()
 
 for epoch in range(EPOCHS):
+    start = time.time()
     total_train_loss = 0
     debug_print = True
 
@@ -169,6 +172,10 @@ for epoch in range(EPOCHS):
 
 
 # POST-TRAINING ANALYSIS
+
+# Load the best model weights
+decoder.load_state_dict(torch.load(BEST_MODEL_PATH, map_location=device, weights_only=True))
+decoder.eval()
 
 # Visualise plot of the training and validation losses after each epoch.
 plot_losses(
