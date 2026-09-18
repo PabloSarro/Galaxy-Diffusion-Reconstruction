@@ -1,0 +1,268 @@
+=====================================================
+============= CONFIGURATION FOR THE RUN =============
+=====================================================
+
+Sparsity: 0.7 | Noise std: 0.22
+Epochs: 200 | Batch: 32 | lr: 0.0005
+Loss: MSE | Alpha: 1.0
+Storage path: ../results/7-with_shape_noise/MSE
+
+USING DEVICE: cuda
+Epoch 1/200 --> Train: 0.004923 | Valid: 0.002797 (in 148.0s).
+   Best model was stored
+Epoch 2/200 --> Train: 0.002607 | Valid: 0.002351 (in 138.8s).
+   Best model was stored
+Epoch 3/200 --> Train: 0.002254 | Valid: 0.002057 (in 138.8s).
+   Best model was stored
+Epoch 4/200 --> Train: 0.002098 | Valid: 0.002020 (in 138.8s).
+   Best model was stored
+Epoch 5/200 --> Train: 0.001999 | Valid: 0.001786 (in 138.9s).
+   Best model was stored
+Epoch 6/200 --> Train: 0.001918 | Valid: 0.001716 (in 138.9s).
+   Best model was stored
+Epoch 7/200 --> Train: 0.001812 | Valid: 0.001777 (in 138.8s).
+Epoch 8/200 --> Train: 0.001739 | Valid: 0.001669 (in 138.8s).
+   Best model was stored
+Epoch 9/200 --> Train: 0.001656 | Valid: 0.001603 (in 138.9s).
+   Best model was stored
+Epoch 10/200 --> Train: 0.001596 | Valid: 0.001438 (in 138.8s).
+   Best model was stored
+Epoch 11/200 --> Train: 0.001550 | Valid: 0.001420 (in 138.8s).
+   Best model was stored
+Epoch 12/200 --> Train: 0.001506 | Valid: 0.001614 (in 138.8s).
+Epoch 13/200 --> Train: 0.001482 | Valid: 0.001411 (in 138.9s).
+   Best model was stored
+Epoch 14/200 --> Train: 0.001440 | Valid: 0.001437 (in 138.8s).
+Epoch 15/200 --> Train: 0.001406 | Valid: 0.001334 (in 138.8s).
+   Best model was stored
+Epoch 16/200 --> Train: 0.001395 | Valid: 0.001608 (in 138.9s).
+Epoch 17/200 --> Train: 0.001383 | Valid: 0.001329 (in 138.9s).
+   Best model was stored
+Epoch 18/200 --> Train: 0.001384 | Valid: 0.001283 (in 138.8s).
+   Best model was stored
+Epoch 19/200 --> Train: 0.001369 | Valid: 0.001394 (in 138.9s).
+Epoch 20/200 --> Train: 0.001332 | Valid: 0.001422 (in 138.9s).
+Epoch 21/200 --> Train: 0.001371 | Valid: 0.001339 (in 138.9s).
+Epoch 22/200 --> Train: 0.001330 | Valid: 0.001301 (in 138.8s).
+Epoch 23/200 --> Train: 0.001321 | Valid: 0.001303 (in 138.8s).
+Epoch 24/200 --> Train: 0.001294 | Valid: 0.001240 (in 138.9s).
+   Best model was stored
+Epoch 25/200 --> Train: 0.001306 | Valid: 0.001348 (in 138.9s).
+Epoch 26/200 --> Train: 0.001284 | Valid: 0.001253 (in 138.9s).
+Epoch 27/200 --> Train: 0.001274 | Valid: 0.001223 (in 138.9s).
+   Best model was stored
+Epoch 28/200 --> Train: 0.001289 | Valid: 0.001217 (in 138.9s).
+   Best model was stored
+Epoch 29/200 --> Train: 0.001253 | Valid: 0.001208 (in 138.8s).
+   Best model was stored
+Epoch 30/200 --> Train: 0.001259 | Valid: 0.001406 (in 138.8s).
+Epoch 31/200 --> Train: 0.001263 | Valid: 0.001218 (in 138.8s).
+Epoch 32/200 --> Train: 0.001229 | Valid: 0.001200 (in 138.9s).
+   Best model was stored
+Epoch 33/200 --> Train: 0.001224 | Valid: 0.001305 (in 138.9s).
+Epoch 34/200 --> Train: 0.001203 | Valid: 0.001198 (in 138.8s).
+   Best model was stored
+Epoch 35/200 --> Train: 0.001211 | Valid: 0.001162 (in 138.9s).
+   Best model was stored
+Epoch 36/200 --> Train: 0.001200 | Valid: 0.001202 (in 138.9s).
+Epoch 37/200 --> Train: 0.001202 | Valid: 0.001187 (in 138.9s).
+Epoch 38/200 --> Train: 0.001175 | Valid: 0.001198 (in 138.9s).
+Epoch 39/200 --> Train: 0.001195 | Valid: 0.001220 (in 138.9s).
+Epoch 40/200 --> Train: 0.001174 | Valid: 0.001155 (in 138.9s).
+   Best model was stored
+Epoch 41/200 --> Train: 0.001162 | Valid: 0.001156 (in 138.9s).
+Epoch 42/200 --> Train: 0.001165 | Valid: 0.001179 (in 138.9s).
+Epoch 43/200 --> Train: 0.001163 | Valid: 0.001185 (in 138.9s).
+Epoch 44/200 --> Train: 0.001154 | Valid: 0.001154 (in 138.8s).
+   Best model was stored
+Epoch 45/200 --> Train: 0.001154 | Valid: 0.001131 (in 138.9s).
+   Best model was stored
+Epoch 46/200 --> Train: 0.001144 | Valid: 0.001154 (in 138.9s).
+Epoch 47/200 --> Train: 0.001142 | Valid: 0.001162 (in 138.9s).
+Epoch 48/200 --> Train: 0.001143 | Valid: 0.001181 (in 138.9s).
+Epoch 49/200 --> Train: 0.001153 | Valid: 0.001128 (in 138.9s).
+   Best model was stored
+Epoch 50/200 --> Train: 0.001143 | Valid: 0.001158 (in 138.9s).
+Epoch 51/200 --> Train: 0.001148 | Valid: 0.001118 (in 138.9s).
+   Best model was stored
+Epoch 52/200 --> Train: 0.001137 | Valid: 0.001132 (in 138.9s).
+Epoch 53/200 --> Train: 0.001142 | Valid: 0.001117 (in 138.9s).
+   Best model was stored
+Epoch 54/200 --> Train: 0.001121 | Valid: 0.001160 (in 138.9s).
+Epoch 55/200 --> Train: 0.001130 | Valid: 0.001127 (in 139.0s).
+Epoch 56/200 --> Train: 0.001124 | Valid: 0.001137 (in 138.9s).
+Epoch 57/200 --> Train: 0.001134 | Valid: 0.001115 (in 138.9s).
+   Best model was stored
+Epoch 58/200 --> Train: 0.001118 | Valid: 0.001122 (in 138.9s).
+Epoch 59/200 --> Train: 0.001117 | Valid: 0.001132 (in 139.0s).
+Epoch 60/200 --> Train: 0.001123 | Valid: 0.001112 (in 138.9s).
+   Best model was stored
+Epoch 61/200 --> Train: 0.001114 | Valid: 0.001182 (in 138.9s).
+Epoch 62/200 --> Train: 0.001118 | Valid: 0.001105 (in 138.9s).
+   Best model was stored
+Epoch 63/200 --> Train: 0.001100 | Valid: 0.001140 (in 138.9s).
+Epoch 64/200 --> Train: 0.001113 | Valid: 0.001114 (in 138.9s).
+Epoch 65/200 --> Train: 0.001132 | Valid: 0.001172 (in 139.0s).
+Epoch 66/200 --> Train: 0.001114 | Valid: 0.001135 (in 139.0s).
+Epoch 67/200 --> Train: 0.001114 | Valid: 0.001129 (in 139.0s).
+Epoch 68/200 --> Train: 0.001106 | Valid: 0.001153 (in 139.0s).
+Epoch 69/200 --> Train: 0.001096 | Valid: 0.001105 (in 139.0s).
+   Best model was stored
+Epoch 70/200 --> Train: 0.001103 | Valid: 0.001111 (in 139.0s).
+Epoch 71/200 --> Train: 0.001106 | Valid: 0.001153 (in 138.9s).
+Epoch 72/200 --> Train: 0.001104 | Valid: 0.001098 (in 138.9s).
+   Best model was stored
+Epoch 73/200 --> Train: 0.001100 | Valid: 0.001130 (in 138.9s).
+Epoch 74/200 --> Train: 0.001096 | Valid: 0.001142 (in 138.9s).
+Epoch 75/200 --> Train: 0.001100 | Valid: 0.001093 (in 138.9s).
+   Best model was stored
+Epoch 76/200 --> Train: 0.001097 | Valid: 0.001130 (in 138.9s).
+Epoch 77/200 --> Train: 0.001101 | Valid: 0.001094 (in 138.9s).
+Epoch 78/200 --> Train: 0.001084 | Valid: 0.001106 (in 139.0s).
+Epoch 79/200 --> Train: 0.001081 | Valid: 0.001109 (in 138.9s).
+Epoch 80/200 --> Train: 0.001102 | Valid: 0.001097 (in 138.9s).
+Epoch 81/200 --> Train: 0.001081 | Valid: 0.001081 (in 139.0s).
+   Best model was stored
+Epoch 82/200 --> Train: 0.001092 | Valid: 0.001093 (in 139.0s).
+Epoch 83/200 --> Train: 0.001079 | Valid: 0.001065 (in 138.9s).
+   Best model was stored
+Epoch 84/200 --> Train: 0.001086 | Valid: 0.001114 (in 138.9s).
+Epoch 85/200 --> Train: 0.001080 | Valid: 0.001096 (in 138.9s).
+Epoch 86/200 --> Train: 0.001077 | Valid: 0.001096 (in 139.0s).
+Epoch 87/200 --> Train: 0.001070 | Valid: 0.001087 (in 138.9s).
+Epoch 88/200 --> Train: 0.001074 | Valid: 0.001106 (in 138.9s).
+Epoch 89/200 --> Train: 0.001072 | Valid: 0.001082 (in 138.9s).
+Epoch 90/200 --> Train: 0.001090 | Valid: 0.001107 (in 139.0s).
+Epoch 91/200 --> Train: 0.001077 | Valid: 0.001152 (in 138.9s).
+Epoch 92/200 --> Train: 0.001069 | Valid: 0.001088 (in 138.9s).
+Epoch 93/200 --> Train: 0.001075 | Valid: 0.001092 (in 138.9s).
+Epoch 94/200 --> Train: 0.001072 | Valid: 0.001078 (in 139.0s).
+Epoch 95/200 --> Train: 0.001067 | Valid: 0.001068 (in 138.9s).
+Epoch 96/200 --> Train: 0.001063 | Valid: 0.001059 (in 138.9s).
+   Best model was stored
+Epoch 97/200 --> Train: 0.001068 | Valid: 0.001107 (in 139.0s).
+Epoch 98/200 --> Train: 0.001062 | Valid: 0.001060 (in 138.9s).
+Epoch 99/200 --> Train: 0.001065 | Valid: 0.001087 (in 138.9s).
+Epoch 100/200 --> Train: 0.001064 | Valid: 0.001063 (in 139.0s).
+Epoch 101/200 --> Train: 0.001052 | Valid: 0.001051 (in 139.0s).
+   Best model was stored
+Epoch 102/200 --> Train: 0.001058 | Valid: 0.001058 (in 138.9s).
+Epoch 103/200 --> Train: 0.001059 | Valid: 0.001069 (in 138.9s).
+Epoch 104/200 --> Train: 0.001059 | Valid: 0.001091 (in 139.0s).
+Epoch 105/200 --> Train: 0.001049 | Valid: 0.001069 (in 139.0s).
+Epoch 106/200 --> Train: 0.001048 | Valid: 0.001056 (in 138.9s).
+Epoch 107/200 --> Train: 0.001043 | Valid: 0.001067 (in 138.9s).
+Epoch 108/200 --> Train: 0.001051 | Valid: 0.001088 (in 138.9s).
+Epoch 109/200 --> Train: 0.001058 | Valid: 0.001057 (in 138.9s).
+Epoch 110/200 --> Train: 0.001049 | Valid: 0.001090 (in 138.9s).
+Epoch 111/200 --> Train: 0.001046 | Valid: 0.001055 (in 138.9s).
+Epoch 112/200 --> Train: 0.001038 | Valid: 0.001060 (in 138.9s).
+Epoch 113/200 --> Train: 0.001043 | Valid: 0.001036 (in 139.0s).
+   Best model was stored
+Epoch 114/200 --> Train: 0.001042 | Valid: 0.001045 (in 138.9s).
+Epoch 115/200 --> Train: 0.001045 | Valid: 0.001078 (in 138.9s).
+Epoch 116/200 --> Train: 0.001046 | Valid: 0.001079 (in 138.9s).
+Epoch 117/200 --> Train: 0.001042 | Valid: 0.001052 (in 139.0s).
+Epoch 118/200 --> Train: 0.001040 | Valid: 0.001055 (in 138.9s).
+Epoch 119/200 --> Train: 0.001037 | Valid: 0.001075 (in 138.9s).
+Epoch 120/200 --> Train: 0.001036 | Valid: 0.001068 (in 138.9s).
+Epoch 121/200 --> Train: 0.001040 | Valid: 0.001052 (in 139.0s).
+Epoch 122/200 --> Train: 0.001034 | Valid: 0.001062 (in 139.0s).
+Epoch 123/200 --> Train: 0.001036 | Valid: 0.001056 (in 139.0s).
+Epoch 124/200 --> Train: 0.001040 | Valid: 0.001030 (in 139.0s).
+   Best model was stored
+Epoch 125/200 --> Train: 0.001035 | Valid: 0.001087 (in 139.0s).
+Epoch 126/200 --> Train: 0.001040 | Valid: 0.001068 (in 138.9s).
+Epoch 127/200 --> Train: 0.001035 | Valid: 0.001063 (in 138.9s).
+Epoch 128/200 --> Train: 0.001038 | Valid: 0.001054 (in 139.0s).
+Epoch 129/200 --> Train: 0.001030 | Valid: 0.001051 (in 139.0s).
+Epoch 130/200 --> Train: 0.001031 | Valid: 0.001052 (in 138.9s).
+Epoch 131/200 --> Train: 0.001035 | Valid: 0.001073 (in 139.0s).
+Epoch 132/200 --> Train: 0.001031 | Valid: 0.001053 (in 139.0s).
+Epoch 133/200 --> Train: 0.001028 | Valid: 0.001041 (in 139.0s).
+Epoch 134/200 --> Train: 0.001033 | Valid: 0.001051 (in 139.0s).
+Epoch 135/200 --> Train: 0.001028 | Valid: 0.001021 (in 138.9s).
+   Best model was stored
+Epoch 136/200 --> Train: 0.001033 | Valid: 0.001058 (in 139.0s).
+Epoch 137/200 --> Train: 0.001024 | Valid: 0.001067 (in 138.9s).
+Epoch 138/200 --> Train: 0.001033 | Valid: 0.001043 (in 139.0s).
+Epoch 139/200 --> Train: 0.001025 | Valid: 0.001041 (in 139.0s).
+Epoch 140/200 --> Train: 0.001022 | Valid: 0.001070 (in 139.0s).
+Epoch 141/200 --> Train: 0.001017 | Valid: 0.001086 (in 139.0s).
+Epoch 142/200 --> Train: 0.001022 | Valid: 0.001042 (in 139.0s).
+Epoch 143/200 --> Train: 0.001024 | Valid: 0.001038 (in 139.0s).
+Epoch 144/200 --> Train: 0.001031 | Valid: 0.001035 (in 139.0s).
+Epoch 145/200 --> Train: 0.001024 | Valid: 0.001049 (in 139.0s).
+Epoch 146/200 --> Train: 0.001019 | Valid: 0.001023 (in 138.9s).
+Epoch 147/200 --> Train: 0.001018 | Valid: 0.001017 (in 139.0s).
+   Best model was stored
+Epoch 148/200 --> Train: 0.001015 | Valid: 0.001015 (in 139.0s).
+   Best model was stored
+Epoch 149/200 --> Train: 0.001034 | Valid: 0.001021 (in 139.0s).
+Epoch 150/200 --> Train: 0.001023 | Valid: 0.001018 (in 139.0s).
+Epoch 151/200 --> Train: 0.001013 | Valid: 0.001049 (in 139.0s).
+Epoch 152/200 --> Train: 0.001021 | Valid: 0.001038 (in 139.0s).
+Epoch 153/200 --> Train: 0.001029 | Valid: 0.001037 (in 139.0s).
+Epoch 154/200 --> Train: 0.001020 | Valid: 0.001051 (in 138.9s).
+Epoch 155/200 --> Train: 0.001016 | Valid: 0.001041 (in 139.0s).
+Epoch 156/200 --> Train: 0.001012 | Valid: 0.001045 (in 139.0s).
+Epoch 157/200 --> Train: 0.001013 | Valid: 0.001010 (in 139.0s).
+   Best model was stored
+Epoch 158/200 --> Train: 0.001013 | Valid: 0.001041 (in 139.0s).
+Epoch 159/200 --> Train: 0.001024 | Valid: 0.001013 (in 139.0s).
+Epoch 160/200 --> Train: 0.001019 | Valid: 0.001024 (in 139.0s).
+Epoch 161/200 --> Train: 0.001016 | Valid: 0.001043 (in 138.9s).
+Epoch 162/200 --> Train: 0.001013 | Valid: 0.001051 (in 138.9s).
+Epoch 163/200 --> Train: 0.001019 | Valid: 0.001025 (in 139.0s).
+Epoch 164/200 --> Train: 0.001020 | Valid: 0.001047 (in 139.0s).
+Epoch 165/200 --> Train: 0.001017 | Valid: 0.001024 (in 139.0s).
+Epoch 166/200 --> Train: 0.001008 | Valid: 0.001035 (in 139.0s).
+Epoch 167/200 --> Train: 0.001018 | Valid: 0.001030 (in 139.0s).
+Epoch 168/200 --> Train: 0.001008 | Valid: 0.001007 (in 139.0s).
+   Best model was stored
+Epoch 169/200 --> Train: 0.001016 | Valid: 0.001021 (in 138.9s).
+Epoch 170/200 --> Train: 0.001023 | Valid: 0.001027 (in 139.0s).
+Epoch 171/200 --> Train: 0.001016 | Valid: 0.001019 (in 139.0s).
+Epoch 172/200 --> Train: 0.001012 | Valid: 0.001034 (in 139.0s).
+Epoch 173/200 --> Train: 0.001016 | Valid: 0.001035 (in 139.0s).
+Epoch 174/200 --> Train: 0.001007 | Valid: 0.001014 (in 139.0s).
+Epoch 175/200 --> Train: 0.001007 | Valid: 0.001025 (in 139.0s).
+Epoch 176/200 --> Train: 0.001011 | Valid: 0.001032 (in 138.9s).
+Epoch 177/200 --> Train: 0.001013 | Valid: 0.001011 (in 138.9s).
+Epoch 178/200 --> Train: 0.001010 | Valid: 0.001019 (in 139.0s).
+Epoch 179/200 --> Train: 0.001011 | Valid: 0.001036 (in 138.9s).
+Epoch 180/200 --> Train: 0.001003 | Valid: 0.001014 (in 138.9s).
+Epoch 181/200 --> Train: 0.001018 | Valid: 0.001027 (in 139.0s).
+Epoch 182/200 --> Train: 0.001010 | Valid: 0.001025 (in 139.0s).
+Epoch 183/200 --> Train: 0.001001 | Valid: 0.001018 (in 138.9s).
+Epoch 184/200 --> Train: 0.001018 | Valid: 0.001017 (in 138.9s).
+Epoch 185/200 --> Train: 0.001012 | Valid: 0.001022 (in 139.0s).
+Epoch 186/200 --> Train: 0.001010 | Valid: 0.001028 (in 139.0s).
+Epoch 187/200 --> Train: 0.001005 | Valid: 0.001012 (in 139.0s).
+Epoch 188/200 --> Train: 0.001005 | Valid: 0.001052 (in 138.9s).
+Epoch 189/200 --> Train: 0.001006 | Valid: 0.001028 (in 139.0s).
+Epoch 190/200 --> Train: 0.001008 | Valid: 0.001006 (in 139.0s).
+   Best model was stored
+Epoch 191/200 --> Train: 0.001001 | Valid: 0.001056 (in 138.9s).
+Epoch 192/200 --> Train: 0.001015 | Valid: 0.001040 (in 138.9s).
+Epoch 193/200 --> Train: 0.001003 | Valid: 0.001014 (in 139.0s).
+Epoch 194/200 --> Train: 0.001008 | Valid: 0.001026 (in 139.0s).
+Epoch 195/200 --> Train: 0.001007 | Valid: 0.001011 (in 139.0s).
+Epoch 196/200 --> Train: 0.001006 | Valid: 0.001051 (in 138.9s).
+Epoch 197/200 --> Train: 0.000999 | Valid: 0.001022 (in 139.0s).
+Epoch 198/200 --> Train: 0.001001 | Valid: 0.001079 (in 139.0s).
+Epoch 199/200 --> Train: 0.001002 | Valid: 0.001043 (in 139.0s).
+Epoch 200/200 --> Train: 0.001002 | Valid: 0.001009 (in 139.0s).
+
+=== Cold Diffusion Evaluation Summary ===
+
+1. Baseline (Worst-Case): xT vs. x0
+MSE     : 62.080099
+Pearson : 0.0545
+
+2. Direct Prediction: xT -> hat[x0]
+MSE     : 0.000700
+Pearson : 0.8471
+MSE + Pearson Evaluation took 2.8s.
+
+Plotting all 10 reconstructed images took 3.1s.

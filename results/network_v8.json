@@ -1,0 +1,99 @@
+{
+  "net": {
+    "checkpoints": 1,
+    "description": "Inception v4-like for clustering, full network from paper",
+    "Composite": {
+      "name": "inception",
+      "config_dir": "../network_configs/composite_layers/",
+      "defaults": {
+        "Conv": {
+          "dropout": 0.05
+        }
+      }
+    }
+  },
+  "layers": [
+    {
+      "type": "Checkpoint"
+    },
+    {
+      "type": "Composite",
+      "channels": 64
+    },
+    {
+      "type": "Pool"
+    },
+    {
+      "type": "Composite",
+      "channels": 128
+    },
+    {
+      "type": "Pool"
+    },
+    {
+      "type": "Composite",
+      "channels": 256
+    },
+    {
+      "type": "Composite",
+      "channels": 256
+    },
+    {
+      "type": "Pool"
+    },
+    {
+      "type": "Composite",
+      "channels": 256
+    },
+    {
+      "type": "Composite",
+      "channels": 256
+    },
+    {
+      "type": "Pool"
+    },
+    {
+      "type": "Composite",
+      "channels": 256
+    },
+    {
+      "type": "Composite",
+      "channels": 256
+    },
+    {
+      "type": "Reshape",
+      "shape": [-1]
+    },
+    {
+      "type": "Checkpoint"
+    },
+    {
+      "type": "Linear",
+      "features": 256
+    },
+    {
+      "type": "Checkpoint"
+    },
+    {
+      "type": "Linear",
+      "features": 7,
+      "dropout": 0
+    },
+    {
+      "type": "OrderedBottleneck",
+      "min_size": 1
+    },
+    {
+      "type": "Checkpoint"
+    },
+    {
+      "type": "Linear",
+      "features": 64
+    },
+    {
+      "type": "Linear",
+      "factor": 1,
+      "dropout": 0
+    }
+  ]
+}

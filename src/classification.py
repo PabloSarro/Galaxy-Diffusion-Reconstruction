@@ -132,9 +132,9 @@ start_total = time.time()
 # 1. SET PATHS & LOCAL VARIABLES
 # ==========================================
 CLASSIFIER_PATH = "../results/network_v8_1.pth"
-DECODER_PATH = "../results/5-low_resolution/MSE/training/decoder_best.pt"
+DECODER_PATH = "../results/7-with_shape_noise/MSE/training/decoder_best.pt"
 DATA_FOLDER = "../data-full/"
-OUTPUT_DIR = "../results/classification/"
+OUTPUT_DIR = "../results/classification/plots_model_7/"
 
 SPARSITY = 0.70
 NOISE_STDS = [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.22, 0.3]  # Noise levels for degradation

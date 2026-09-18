@@ -1,0 +1,67 @@
+Loading classifier from: ../results/network_v8_1.pth
+    Done (0.17s)
+Loading U-Net Decoder from: ../results/5-low_resolution/MSE/training/decoder_best.pt
+    Done (0.11s)
+Loading degradation with: sp=0.7, std=0.005
+    Done (0.00s)
+Loading data from: ../data-full/
+    Using the FULL dataset: 240/720 samples per class with DARKSKIES/BAHAMAS.
+    Done (5.20s)
+Generating Noisy, U-Net, and kNN datasets...
+    Done (1008.79s)
+
+======== Evaluation loop starting... (Results saving to ../results/classification/) ========
+
+------ Predicting: 1. Noise-Free ------
+Prediction time: 1.428e+02 s
+
+Evaluating: 1. Noise-Free...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [2 0 0 0 0 3 1 1 3 3]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 1. Noise-Free.png
+  -> Metrics: Acc: 0.612 | Prec: 0.586 | Rec: 0.588 | F1: 0.580
+  Done (143.43s)
+
+------ Predicting: 2. Noisy_both ------
+Prediction time: 1.432e+02 s
+
+Evaluating: 2. Noisy_both...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [1 1 1 1 1 1 1 1 1 1]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 2. Noisy_both.png
+  -> Metrics: Acc: 0.201 | Prec: 0.048 | Rec: 0.144 | F1: 0.057
+  Done (143.70s)
+
+------ Predicting: 3. U-Net_norm ------
+Prediction time: 1.398e+02 s
+
+Evaluating: 3. U-Net_norm...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [0 0 0 0 0 0 0 1 1 1]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net_norm.png
+  -> Metrics: Acc: 0.343 | Prec: 0.357 | Rec: 0.377 | F1: 0.305
+  Done (143.70s)
+
+------ Predicting: 4. kNN_chi ------
+Prediction time: 1.437e+02 s
+
+Evaluating: 4. kNN_chi...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [0 0 0 0 0 2 0 0 0 0]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 4. kNN_chi.png
+  -> Metrics: Acc: 0.091 | Prec: 0.232 | Rec: 0.149 | F1: 0.055
+  Done (165.16s)
+
+Total evaluation time: 1610.28s

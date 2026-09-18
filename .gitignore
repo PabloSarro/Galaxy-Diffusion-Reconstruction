@@ -9,9 +9,11 @@ PyTorch-Network-Loader/
 # Results and model checkpoints
 old_src/
 old_results/
-results/
+results/old_reconstr/
+report/
 tests/
-*.pkl
+data/
+data-full/
 *.sh
 *.job
 *.pt
@@ -19,7 +21,7 @@ tests/
 # Logs and Python cache
 logs/
 __pycache__/
-*.log
+.vscode/
+*.png
 *.err
 *.txt
-*.json

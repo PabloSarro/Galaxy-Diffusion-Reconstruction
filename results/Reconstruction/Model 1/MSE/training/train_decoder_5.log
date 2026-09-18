@@ -1,0 +1,98 @@
+=====================================================
+============= CONFIGURATION FOR THE RUN =============
+=====================================================
+
+Sparsity: 0.7 | Noise std: 0.005
+Epochs: 50 | Batch: 16 | lr: 0.0001
+Loss: MSE | Alpha: 1.0
+Storage path: ../results/5-low_resolution/MSE
+
+Train+Valid datasets generated (in 0.08280s).
+Epoch 1/50 --> Train: 0.001969 | Valid: 0.000773 (in 119.4s).
+   Best model was stored
+Epoch 2/50 --> Train: 0.000780 | Valid: 0.000585 (in 229.8s).
+   Best model was stored
+Epoch 3/50 --> Train: 0.000648 | Valid: 0.000487 (in 340.2s).
+   Best model was stored
+Epoch 4/50 --> Train: 0.000553 | Valid: 0.000465 (in 450.5s).
+   Best model was stored
+Epoch 5/50 --> Train: 0.000515 | Valid: 0.000433 (in 560.8s).
+   Best model was stored
+Epoch 6/50 --> Train: 0.000480 | Valid: 0.000485 (in 671.1s).
+Epoch 7/50 --> Train: 0.000451 | Valid: 0.000385 (in 781.4s).
+   Best model was stored
+Epoch 8/50 --> Train: 0.000433 | Valid: 0.000433 (in 891.7s).
+Epoch 9/50 --> Train: 0.000422 | Valid: 0.000367 (in 1001.9s).
+   Best model was stored
+Epoch 10/50 --> Train: 0.000404 | Valid: 0.000347 (in 1112.2s).
+   Best model was stored
+Epoch 11/50 --> Train: 0.000402 | Valid: 0.000339 (in 1222.4s).
+   Best model was stored
+Epoch 12/50 --> Train: 0.000373 | Valid: 0.000334 (in 1332.6s).
+   Best model was stored
+Epoch 13/50 --> Train: 0.000382 | Valid: 0.000330 (in 1442.8s).
+   Best model was stored
+Epoch 14/50 --> Train: 0.000353 | Valid: 0.000323 (in 1553.0s).
+   Best model was stored
+Epoch 15/50 --> Train: 0.000355 | Valid: 0.000298 (in 1663.3s).
+   Best model was stored
+Epoch 16/50 --> Train: 0.000350 | Valid: 0.000299 (in 1773.5s).
+Epoch 17/50 --> Train: 0.000334 | Valid: 0.000305 (in 1883.6s).
+Epoch 18/50 --> Train: 0.000338 | Valid: 0.000303 (in 1993.8s).
+Epoch 19/50 --> Train: 0.000325 | Valid: 0.000273 (in 2103.9s).
+   Best model was stored
+Epoch 20/50 --> Train: 0.000320 | Valid: 0.000293 (in 2214.1s).
+Epoch 21/50 --> Train: 0.000310 | Valid: 0.000294 (in 2324.3s).
+Epoch 22/50 --> Train: 0.000314 | Valid: 0.000296 (in 2434.5s).
+Epoch 23/50 --> Train: 0.000302 | Valid: 0.000278 (in 2544.7s).
+Epoch 24/50 --> Train: 0.000302 | Valid: 0.000279 (in 2654.8s).
+Epoch 25/50 --> Train: 0.000293 | Valid: 0.000252 (in 2765.0s).
+   Best model was stored
+Epoch 26/50 --> Train: 0.000289 | Valid: 0.000248 (in 2875.3s).
+   Best model was stored
+Epoch 27/50 --> Train: 0.000289 | Valid: 0.000260 (in 2985.6s).
+Epoch 28/50 --> Train: 0.000284 | Valid: 0.000270 (in 3095.8s).
+Epoch 29/50 --> Train: 0.000281 | Valid: 0.000245 (in 3206.1s).
+   Best model was stored
+Epoch 30/50 --> Train: 0.000276 | Valid: 0.000240 (in 3316.4s).
+   Best model was stored
+Epoch 31/50 --> Train: 0.000278 | Valid: 0.000239 (in 3426.7s).
+   Best model was stored
+Epoch 32/50 --> Train: 0.000273 | Valid: 0.000241 (in 3537.0s).
+Epoch 33/50 --> Train: 0.000271 | Valid: 0.000241 (in 3647.2s).
+Epoch 34/50 --> Train: 0.000267 | Valid: 0.000237 (in 3757.5s).
+   Best model was stored
+Epoch 35/50 --> Train: 0.000267 | Valid: 0.000232 (in 3867.8s).
+   Best model was stored
+Epoch 36/50 --> Train: 0.000264 | Valid: 0.000226 (in 3978.1s).
+   Best model was stored
+Epoch 37/50 --> Train: 0.000263 | Valid: 0.000244 (in 4088.4s).
+Epoch 38/50 --> Train: 0.000259 | Valid: 0.000253 (in 4198.6s).
+Epoch 39/50 --> Train: 0.000256 | Valid: 0.000229 (in 4308.8s).
+Epoch 40/50 --> Train: 0.000257 | Valid: 0.000232 (in 4418.9s).
+Epoch 41/50 --> Train: 0.000254 | Valid: 0.000222 (in 4529.1s).
+   Best model was stored
+Epoch 42/50 --> Train: 0.000251 | Valid: 0.000232 (in 4639.4s).
+Epoch 43/50 --> Train: 0.000258 | Valid: 0.000233 (in 4749.6s).
+Epoch 44/50 --> Train: 0.000250 | Valid: 0.000239 (in 4859.8s).
+Epoch 45/50 --> Train: 0.000252 | Valid: 0.000233 (in 4970.0s).
+Epoch 46/50 --> Train: 0.000246 | Valid: 0.000220 (in 5080.2s).
+   Best model was stored
+Epoch 47/50 --> Train: 0.000244 | Valid: 0.000243 (in 5190.4s).
+Epoch 48/50 --> Train: 0.000247 | Valid: 0.000225 (in 5300.6s).
+Epoch 49/50 --> Train: 0.000242 | Valid: 0.000226 (in 5410.8s).
+Epoch 50/50 --> Train: 0.000248 | Valid: 0.000217 (in 5521.0s).
+   Best model was stored
+
+=== Cold Diffusion Evaluation Summary ===
+
+1. Baseline (Worst-Case): xT vs. x0
+MSE     : 0.010458
+Pearson : 0.4639
+
+2. Direct Prediction: xT -> \hat[x0]
+MSE     : 0.000159
+Pearson : 0.9300
+MSE + Pearson Evaluation took 1.4s.
+
+Plotting all 10 reconstructed images took 3.0s.
