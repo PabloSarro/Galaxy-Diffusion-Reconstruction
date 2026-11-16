@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH --job-name=Repro11
+#SBATCH --time=04:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=32G
+#SBATCH --account=cs-302
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../results/repro_1.1/job_%j.log
+#SBATCH --error=../results/repro_1.1/job_%j.err
+
+# Task 1.1: re-run pixel eval + classification from the existing checkpoints.
+# Submit from src/:  sbatch repro_1_1.job
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+R=../results
+OUT=$R/repro_1.1
+echo "host=$(hostname) date=$(date)"; nvidia-smi --query-gpu=name --format=csv,noheader; $PY -c "import torch;print('torch',torch.__version__)"
+
+declare -A SIGMA=( [1]=0.005 [2]=0 [3]=0.22 )
+for M in 1 2 3; do
+  DEC="$R/Reconstruction/Model $M/MSE/training/decoder_best.pt"
+  mkdir -p "$OUT/Model $M"
+  $PY -u eval_pixel.py --decoder-path "$DEC" --output-dir "$OUT/Model $M" --noise-std ${SIGMA[$M]} \
+      > "$OUT/Model $M/pixel_eval.log" 2>&1
+  $PY -u classification.py --decoder-path "$DEC" --output-dir "$OUT/Model $M/classification" \
+      > "$OUT/Model $M/classification.log" 2>&1
+done
+echo "done $(date)"

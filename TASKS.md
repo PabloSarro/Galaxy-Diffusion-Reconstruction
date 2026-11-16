@@ -7,7 +7,7 @@
 - GPU cost basis: ~140 s/epoch, 200 epochs ≈ 8 GPU-h; eval sweep ≈ 0.7 GPU-h.
 
 ## Status
-- `[-]` 1 Reproduce + golden · exit: logs matched, golden test passes · result: –
+- `[~]` 1 Reproduce + golden · exit: logs matched, golden test passes · result: –
 - `[-]` 2 Cleanup + resumable training (2.1–2.2) · exit: approved list applied, resume test passes, tests + golden pass · result: –
 - `[-]` 3A Fair protocol + baseline B1 (3.1–3.2) · exit: 2 seeds, matched-σ kNN · result: –
 - `[-]` 3B Diffusion post-mortem (3.3) · exit: each failure cause confirmed or rejected · result: –
@@ -45,7 +45,7 @@
 
 ## Plan
 ### 1 Reproduce the baseline and save the golden output
-- `[-]` **1.1 Reproduce reported numbers from the existing checkpoints**
+- `[~]` **1.1 Reproduce reported numbers from the existing checkpoints**
   - Goal: re-obtain Tables 5–7 without retraining.
   - Why: paths in `src/` point to renamed folders; numbers are untested since Sept.
   - Steps:
@@ -55,7 +55,10 @@
     - Write the caveats note (items in 3.1) next to the numbers.
   - Effort: 3 h / 2 GPU-h.
   - Success: all Model 2/3 numbers within the golden tolerance of the logs.
-  - Outcome (date):
+  - Outcome (2026-11-16, in progress): code done (`src/eval_args.py`, `src/eval_pixel.py`, CLI args in `classification.py`, test `tests/eval/test_eval_args.py`).
+    - Job 3253927 (`src/repro_1_1.job`, acct cs-302, FairShare 0.258) writes to `results/repro_1.1/Model {1,2,3}/`.
+    - Check later: compare `pixel_eval.log` / `classification.log` with the original logs; note torch version + GPU (printed in the job log); then fill Results log and caveats note.
+    - Env has no pytest; tests run with `python -m unittest`.
 - `[-]` **1.2 Golden output and first real tests**
   - Goal: a non-regression check every later refactor must pass.
   - Why: `tests/` has only plotting scripts; `pytest` is not installed.

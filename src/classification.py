@@ -15,6 +15,7 @@ from dataset import GalaxyDataset
 from helpers import generate_train_valid_datasets, set_seed
 from model import Decoder
 from degradation import Degradation
+from eval_args import add_eval_args
 
 
 class CustomDataset(Dataset):
@@ -131,15 +132,22 @@ start_total = time.time()
 # ==========================================
 # 1. SET PATHS & LOCAL VARIABLES
 # ==========================================
-CLASSIFIER_PATH = "../results/network_v8_1.pth"
-DECODER_PATH = "../results/7-with_shape_noise/MSE/training/decoder_best.pt"
-DATA_FOLDER = "../data-full/"
-OUTPUT_DIR = "../results/classification/plots_model_7/"
+parser = argparse.ArgumentParser()
+add_eval_args(parser)
+parser.add_argument("--classifier-path", default="../results/network_v8_1.pth")
+parser.add_argument("--n-class", type=int, default=-1,
+                    help="-2: full dataset; -1: full validation split; N>0: N validation samples per class")
+args = parser.parse_args()
 
-SPARSITY = 0.70
-NOISE_STDS = [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.22, 0.3]  # Noise levels for degradation
-BATCH_SIZE = 32
-N_CLASS = -1
+CLASSIFIER_PATH = args.classifier_path
+DECODER_PATH = args.decoder_path
+DATA_FOLDER = args.data_folder
+OUTPUT_DIR = args.output_dir
+
+SPARSITY = args.sparsity
+NOISE_STDS = args.noise_stds  # Noise levels for degradation
+BATCH_SIZE = args.batch_size
+N_CLASS = args.n_class
 # How to set N_CLASS:
 # -2: Use full dataset (1200 per DARKSKIES class, 3600 per BAHAMAS class)
 # -1: Use full validation split (240 per DARKSKIES class, 720 per BAHAMAS class)
@@ -156,7 +164,7 @@ TARGET_TO_CLASS = {
 }
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-set_seed(42)
+set_seed(args.seed)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ==========================================
