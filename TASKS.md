@@ -45,7 +45,7 @@
 
 ## Plan
 ### 1 Reproduce the baseline and save the golden output
-- `[~]` **1.1 Reproduce reported numbers from the existing checkpoints**
+- `[X]` **1.1 Reproduce reported numbers from the existing checkpoints**
   - Goal: re-obtain Tables 5–7 without retraining.
   - Why: paths in `src/` point to renamed folders; numbers are untested since Sept.
   - Steps:
@@ -59,6 +59,12 @@
     - Job 3253927 (`src/repro_1_1.job`, acct cs-302, FairShare 0.258) writes to `results/repro_1.1/Model {1,2,3}/`.
     - Check later: compare `pixel_eval.log` / `classification.log` with the original logs; note torch version + GPU (printed in the job log); then fill Results log and caveats note.
     - Env has no pytest; tests run with `python -m unittest`.
+  - Outcome (2026-11-16): reproduced. Job 3253927, V100-32GB, torch 2.5.1, 1h06; run folder `results/repro_1.1/` (local, gitignored; `comparison.txt`). Commit: see Results log.
+    - Classification Models 2, 3: identical to the original logs on all 14 sets (acc, F1).
+    - Pixel (valid, first 20 batches; masks/noise not replayed, so small drift): M1 MSE 1.58e-4, ρ 0.9252 (rep. 0.9300); M2 2.30e-5, 0.9485 (0.9489); M3 6.99e-4, 0.8453 (0.8471). Golden tolerance for ρ: ±0.005.
+    - Model 1 classification does NOT match Table 6 (U-Net 0.343/0.305, kNN 0.091): now 0.384/0.353 (σ=0.005), kNN 0.206/0.168, noisy 0.203 vs 0.201. Old log came from an older `classification.py` (set name "Noisy_both", other kNN). Table 6 not reproducible with current code; do not cite it as a baseline.
+    - Caveats: kNN runs at σ=0.005 only (3.1); pixel ρ is a single draw of degradation noise; env has no pytest (`python -m unittest`).
+    - New: `src/eval_args.py`, `src/eval_pixel.py`, `src/compare_logs.py`, `src/repro_1_1.job` + tests in `tests/eval/` (force-added; `.gitignore` fix is in 2.1).
 - `[-]` **1.2 Golden output and first real tests**
   - Goal: a non-regression check every later refactor must pass.
   - Why: `tests/` has only plotting scripts; `pytest` is not installed.
@@ -246,8 +252,9 @@
 ## Results log
 | date | run folder | split | config (diff from the baseline) | metrics | note |
 |---|---|---|---|---|---|
+| 2026-11-16 | `results/repro_1.1` | valid, seed 42 | reproduction of Models 1–3, no change | M2/M3 classification identical; pixel ρ M1 0.9252, M2 0.9485, M3 0.8453; M1 classification differs from Table 6 (0.384 vs 0.343) | task 1.1 |
 
 ## Next session: start here
-- First bullet: **1.1 Reproduce reported numbers from the existing checkpoints**.
+- First bullet: **1.2 Golden output and first real tests** (1.1 done).
 - Branch: `improvements-nov2026`.
 - How to start: see `CLAUDE.md` ("Starting a session"). Nothing blocks 1.1.
