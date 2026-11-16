@@ -98,7 +98,11 @@
     - Metrics in χ / physical space as well as normalised space.
     - Add Kaiser–Squires-based metrics via `helpers.shear_to_mass`; power-spectrum error.
     - Verify the MSE=62 cause (range `b−a`, not the |g|>1 branch).
-    - Classifier provenance: Ethan's run (D3); ask him about its split and inputs (D3b).
+    - Classifier provenance (D3, D3b), from evidence only:
+      - Inspect the checkpoint (`arch.transforms`, stored indices, losses) and `EDA/Ethan-dataset-prep.py`.
+      - Compare its accuracy on our train vs valid maps; a gap means it trained on part of them.
+      - Measure its accuracy vs σ and s on clean maps to see which inputs it tolerates.
+      - If its split cannot be recovered: say so in the report and treat the ceiling as optimistic.
     - Config file + seed argument per run; unit tests for all of the above.
   - Effort: 10 h / 2 GPU-h.
   - Success: existing checkpoints re-scored; a table with matched-σ kNN and chance levels.
@@ -127,9 +131,9 @@
       - Decoder not conditioned on the observation.
       - InfoNCE solved by instance identity (probe: does the latent predict class?).
       - Data scale (std ≈ 0.05) vs unit-variance schedule.
-    - Redo the time ablation on `data-full` (D12).
+    - Redo the time comparison on `data-full`: no time / fixed t / random t, s=0.7, 2 seeds (D12).
     - Write `docs/DIFFUSION_POSTMORTEM.md` (asked for by this task).
-  - Effort: 8 h / 4 GPU-h.
+  - Effort: 9 h / 28 GPU-h (6 screening runs of 60 epochs).
   - Success: each cause marked confirmed / rejected with a number.
   - Outcome (date):
 - `[-]` **3.4 Representation and conditioning fixes (on B1, one change each)**
@@ -203,16 +207,14 @@
   - Outcome (date):
 
 ## Open questions for me
-| ID | Question | Decide before |
-|---|---|---|
-| D12 | Report Table 2 (fixed-time vs no-time U-Net) was run on `/scratch/izar/sarro/BAHAMAS-data-nonsparse`, which is gone. Do you still have that dataset, or do I redo the comparison on `data-full`? | 3.3 |
-| D3b | Ask Ethan: which maps / split trained `network_v8_1.pth`, and did it ever see noisy or masked inputs? | 3.1 |
+- None open. New ones get an ID (D13, …) and a "decide before" task.
 
 ### Decisions (2026-11-16)
 - D1 Slurm: before every job, run `sshare -U -u $USER` and submit with the account of highest FairShare.
   - Accounts: `cs-302`, `env540`, `math-454`, `master`; partition `gpu`.
 - D2 Sessions: `screen` is installed on `izar1` and survives SSH / VS Code closing; no tmux install needed.
 - D3 Classifier: Ethan's DARKSKIES-Classifier training run; expected ≈ 60 % on perfect shear maps (we get 0.612).
+- D3b Ethan can no longer be asked. The classifier's training split and inputs are settled from evidence in 3.1.
 - D4 Cluster-grouped train / valid / test split: approved. Reported numbers become "legacy".
 - D5 Headline metric: macro-F1; balanced accuracy and accuracy reported next to it, with chance levels.
 - D6 Noise: `num_gals` is binary without sampling, so N_gal = 1 is correct (Ethan).
@@ -222,6 +224,8 @@
 - D9 `.gitignore` may change, on `improvements-nov2026` only. Tag `report-october2026` and `main` stay intact.
 - D10 Report sources are in `report/report.zip` (tex, preamble, refs, title page, images; no PDF).
 - D11 Tag name `report-october2026` kept.
+- D12 Old dataset is gone: redo the time comparison on `data-full` (no time / fixed t / random t, s=0.7, 2 seeds).
+  - Report Table 2 stays as a legacy number that could not be re-checked.
 
 ## Results log
 | date | run folder | split | config (diff from the baseline) | metrics | note |
