@@ -15,11 +15,14 @@ results live in `TASKS.md`. This file only says how to work.
 - Keep this map current: update it whenever the structure changes (e.g. after the cleanup task).
 
 ## Starting a session
-- Always inside tmux, so the session survives SSH disconnects:
-  `tmux new -As claude`, then `cd <<REPO_PATH>> && claude`.
+- Always inside screen (tmux is not installed on izar), so the session survives SSH
+  disconnects and closing VS Code:
+  `screen -DRS claude`, then `cd /home/sarro/SummerProj && claude`. Detach with `Ctrl-a d`.
 - First read `TASKS.md`: "Status" and "Next session: start here".
 - Anything long that you start (training, evaluation, sweeps) goes into a cluster job or its own
-  named tmux window, with its output logged to a file. Never a bare background process.
+  named screen window, with its output logged to a file. Never a bare background process.
+- Slurm: before every job, run `sshare -U -u $USER` and submit with the account that has the
+  highest FairShare (accounts: cs-302, env540, math-454, master; partition gpu).
 
 ## TASKS.md is the single source of truth
 - A fresh session must see from it alone everything that was done, every outcome, and what's

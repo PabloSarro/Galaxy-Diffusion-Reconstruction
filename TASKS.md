@@ -60,7 +60,7 @@
   - Goal: a non-regression check every later refactor must pass.
   - Why: `tests/` has only plotting scripts; `pytest` is not installed.
   - Steps:
-    - Install `pytest`; un-ignore `tests/` (see D9).
+    - Install `pytest`; un-ignore `tests/` (D9: this branch only).
     - Save the golden file; add `tests/test_golden.py`.
     - Unit tests: degradation (mask fraction, σ=0 identity on kept pixels), split determinism, `decoder_loss`, model output shape.
     - Sort the `glob` in `dataset.py` only if the golden output stays identical.
@@ -73,14 +73,14 @@
   - Goal: a small repo where every folder has one purpose.
   - Why: 6.2 GB `old_results/`, 295 PNGs, a 197 MB installer, stale `__pycache__` of removed modules.
   - Steps:
-    - Propose the list for approval (D8). Starting point:
+    - List approved (D8); nothing deleted, all moves go to `archive/`. Starting point:
       - Keep: `src/`, `tests/`, `report/`, `results/Reconstruction`, `results/Classification`, classifier files.
       - Move to `archive/` or outside the repo with a pointer file: `old_src/`, `old_results/`, `results/old_reconstr/`, `EDA/`.
-      - Delete candidates (ask first): `miniconda.sh`, `src/__pycache__/`, duplicate PNGs under `tests/`.
+      - To `archive/` instead of deleting: `miniconda.sh`, duplicate PNGs under `tests/`. `src/__pycache__/` is regenerated, leave it ignored.
       - Outside the repo: `envSummer1_conda/`, `PyTorch-Network-Loader/` (pin commit `0a12e38`).
     - Use `git mv` for tracked files; never touch `data-full/`.
     - Fix `.gitignore`, `README.md` (wrong flag, wrong paths), `requirements.txt`.
-    - Add missing report sources (D10).
+    - Unpack `report/report.zip` into `report/` (D10); check it matches `shear_reconstruction.tex`.
     - Run tests + golden; update the repository map in `CLAUDE.md`.
   - Effort: 4 h / 0 GPU-h.
   - Success: tests + golden pass; repo map matches the tree; nothing deleted without approval.
@@ -94,11 +94,11 @@
     - kNN and raw-degraded evaluated at each test σ (fix `classification.py:264`).
     - Train / valid / test split grouped by cluster (BAHAMAS `clusterID`, DARKSKIES `ID`), saved as index files (D4).
     - Pixel metrics on the full split, per class, not the first 20 batches.
-    - Headline metric: macro-F1 and balanced accuracy; report constant-predictor chance (D5).
+    - Headline metric: macro-F1; also balanced accuracy, accuracy and constant-predictor chance (D5).
     - Metrics in χ / physical space as well as normalised space.
     - Add Kaiser–Squires-based metrics via `helpers.shear_to_mass`; power-spectrum error.
     - Verify the MSE=62 cause (range `b−a`, not the |g|>1 branch).
-    - Establish classifier provenance (D3).
+    - Classifier provenance: Ethan's run (D3); ask him about its split and inputs (D3b).
     - Config file + seed argument per run; unit tests for all of the above.
   - Effort: 10 h / 2 GPU-h.
   - Success: existing checkpoints re-scored; a table with matched-σ kNN and chance levels.
@@ -205,18 +205,23 @@
 ## Open questions for me
 | ID | Question | Decide before |
 |---|---|---|
-| D1 | Which Slurm account and partition, and what GPU-hour budget? Job files use `math-454` and `env540`. Plan total ≈ 270 GPU-h. | 1.1 |
-| D2 | `tmux` is not installed on `izar1`. Install it, or change the rule (e.g. `screen` / Slurm only)? | 1.1 |
-| D9 | May `.gitignore` stop ignoring `tests/`, `*.job`, `requirements.txt`? Tests cannot be committed otherwise. | 1.2 |
-| D8 | Approve the keep / move / delete list; where do archives and weight backups go? | 2.1 |
-| D10 | Can you add `refs.bib`, the preamble, title page and PDF of the report? | 2.1 |
-| D3 | Where does `network_v8_1.pth` come from: training data, split, noise level? | 3.1 |
-| D4 | OK to introduce a cluster-grouped train/valid/test split? Reported numbers become "legacy". | 3.1 |
-| D5 | Headline metric: macro-F1 + balanced accuracy instead of accuracy? | 3.1 |
-| D6 | Real galaxies per pixel? σ_pixel = 0.22/√N_gal decides the target regime. | 3.2 |
-| D12 | Old dataset `BAHAMAS-data-nonsparse` is gone. Redo the time ablation on `data-full`? | 3.3 |
-| D7 | If a stochastic diffusion beats cold diffusion, may it become the headline, with cold as a variant? | 3.6 |
-| D11 | Tag name `report-october2026`, though the report is dated 16 Sept 2026: keep? Decided 2026-11-16: keep. | done |
+| D12 | Report Table 2 (fixed-time vs no-time U-Net) was run on `/scratch/izar/sarro/BAHAMAS-data-nonsparse`, which is gone. Do you still have that dataset, or do I redo the comparison on `data-full`? | 3.3 |
+| D3b | Ask Ethan: which maps / split trained `network_v8_1.pth`, and did it ever see noisy or masked inputs? | 3.1 |
+
+### Decisions (2026-11-16)
+- D1 Slurm: before every job, run `sshare -U -u $USER` and submit with the account of highest FairShare.
+  - Accounts: `cs-302`, `env540`, `math-454`, `master`; partition `gpu`.
+- D2 Sessions: `screen` is installed on `izar1` and survives SSH / VS Code closing; no tmux install needed.
+- D3 Classifier: Ethan's DARKSKIES-Classifier training run; expected ≈ 60 % on perfect shear maps (we get 0.612).
+- D4 Cluster-grouped train / valid / test split: approved. Reported numbers become "legacy".
+- D5 Headline metric: macro-F1; balanced accuracy and accuracy reported next to it, with chance levels.
+- D6 Noise: `num_gals` is binary without sampling, so N_gal = 1 is correct (Ethan).
+  - Per-pixel σ is the intrinsic dispersion itself; Ethan suggests 0.3. Keep 0.22 as target, also report 0.3.
+- D7 Diffusion is central; the best-performing type (cold or stochastic) becomes the headline.
+- D8 Cleanup list approved. Nothing is deleted: everything goes to a separate `archive/` folder with a pointer.
+- D9 `.gitignore` may change, on `improvements-nov2026` only. Tag `report-october2026` and `main` stay intact.
+- D10 Report sources are in `report/report.zip` (tex, preamble, refs, title page, images; no PDF).
+- D11 Tag name `report-october2026` kept.
 
 ## Results log
 | date | run folder | split | config (diff from the baseline) | metrics | note |
@@ -225,4 +230,4 @@
 ## Next session: start here
 - First bullet: **1.1 Reproduce reported numbers from the existing checkpoints**.
 - Branch: `improvements-nov2026`.
-- How to start: see `CLAUDE.md` ("Starting a session"); resolve D1 and D2 first.
+- How to start: see `CLAUDE.md` ("Starting a session"). Nothing blocks 1.1.
