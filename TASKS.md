@@ -8,7 +8,7 @@
 
 ## Status
 - `[-]` 1 Reproduce + golden · exit: logs matched, golden test passes · result: –
-- `[-]` 2 Cleanup · exit: approved list applied, tests + golden pass · result: –
+- `[-]` 2 Cleanup + resumable training (2.1–2.2) · exit: approved list applied, resume test passes, tests + golden pass · result: –
 - `[-]` 3A Fair protocol + baseline B1 (3.1–3.2) · exit: 2 seeds, matched-σ kNN · result: –
 - `[-]` 3B Diffusion post-mortem (3.3) · exit: each failure cause confirmed or rejected · result: –
 - `[-]` 3C Representation fixes (3.4) · exit: each change judged vs seed spread · result: –
@@ -84,6 +84,19 @@
     - Run tests + golden; update the repository map in `CLAUDE.md`.
   - Effort: 4 h / 0 GPU-h.
   - Success: tests + golden pass; repo map matches the tree; nothing deleted without approval.
+  - Outcome (date):
+
+- `[-]` **2.2 Resumable training: last + best checkpoints**
+  - Goal: every training script saves `last` and `best` and can resume after a killed job.
+  - Why: Slurm wall limit unknown (QoS max seen: 3 days for gpu/math-454, 7.5 for cs-302). `train_decoder.py` saves only `decoder_best.pt`.
+  - Steps:
+    - Save `last.pt` every epoch (model, optimizer, scheduler, epoch, best metric, RNG state), written atomically; keep `best.pt` by validation.
+    - Add `--resume` (continue from `last.pt`, appending to the same log).
+    - Slurm scripts: log to file; resubmittable, same run folder.
+    - Unit test: train 2 epochs, resume, compare with an uninterrupted run (within tolerance).
+    - Check the exact QoS wall limit of the account used and note it here.
+  - Effort: 3 h / 0 GPU-h.
+  - Success: test passes; golden still reproduced; must be done before 3.2 (first retraining).
   - Outcome (date):
 
 ### 3 Cold diffusion as the main approach
