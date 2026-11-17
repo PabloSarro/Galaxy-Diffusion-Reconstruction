@@ -11,7 +11,7 @@ old_src/
 old_results/
 results/old_reconstr/
 report/
-tests/
+
 data/
 data-full/
 *.sh

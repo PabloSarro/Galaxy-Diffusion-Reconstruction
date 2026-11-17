@@ -7,7 +7,7 @@
 - GPU cost basis: ~140 s/epoch, 200 epochs ≈ 8 GPU-h; eval sweep ≈ 0.7 GPU-h.
 
 ## Status
-- `[~]` 1 Reproduce + golden · exit: logs matched, golden test passes · result: –
+- `[X]` 1 Reproduce + golden · exit: logs matched, golden test passes · result: –
 - `[-]` 2 Cleanup + resumable training (2.1–2.2) · exit: approved list applied, resume test passes, tests + golden pass · result: –
 - `[-]` 3A Fair protocol + baseline B1 (3.1–3.2) · exit: 2 seeds, matched-σ kNN · result: –
 - `[-]` 3B Diffusion post-mortem (3.3) · exit: each failure cause confirmed or rejected · result: –
@@ -65,7 +65,7 @@
     - Model 1 classification does NOT match Table 6 (U-Net 0.343/0.305, kNN 0.091): now 0.384/0.353 (σ=0.005), kNN 0.206/0.168, noisy 0.203 vs 0.201. Old log came from an older `classification.py` (set name "Noisy_both", other kNN). Table 6 not reproducible with current code; do not cite it as a baseline.
     - Caveats: kNN runs at σ=0.005 only (3.1); pixel ρ is a single draw of degradation noise; env has no pytest (`python -m unittest`).
     - New: `src/eval_args.py`, `src/eval_pixel.py`, `src/compare_logs.py`, `src/repro_1_1.job` + tests in `tests/eval/` (force-added; `.gitignore` fix is in 2.1).
-- `[-]` **1.2 Golden output and first real tests**
+- `[X]` **1.2 Golden output and first real tests**
   - Goal: a non-regression check every later refactor must pass.
   - Why: `tests/` has only plotting scripts; `pytest` is not installed.
   - Steps:
@@ -75,7 +75,12 @@
     - Sort the `glob` in `dataset.py` only if the golden output stays identical.
   - Effort: 4 h / 0.3 GPU-h.
   - Success: `pytest` green; golden test fails when a weight is perturbed.
-  - Outcome (date):
+  - Outcome (2026-11-17): done, CPU only (0 GPU-h). `pytest` 9.2.0 (`tests/` un-ignored on this branch). 14 passed in 5 min.
+    - Golden: `tests/golden/golden.json` (8 val samples, σ=0.22 Model 3, CPU). Summary: pred MSE 6.83e-4, pred mean 0.5468, xT mean 0.5484. Regenerate only with approval: `python tests/golden/golden_common.py`.
+    - Tests: `tests/golden/test_golden.py` (match + perturbed weight detected), `tests/test_units.py` (σ=0 identity on |g|≤1 pixels, mask fraction, split determinism + stratification, loss methods, output shape), `tests/eval/` (from 1.1).
+    - Golden test skips if `data-full/` or the Model 3 checkpoint is absent (checkpoints are gitignored).
+    - Not done: sorting `glob` in `dataset.py` (would change the split; golden records the valid indices, so a change will be caught).
+    - Note: `degradation.py` treats |g|>1 pixels differently, even at σ=0 (not identity there). Left as is.
 
 ### 2 Clean up the structure
 - `[-]` **2.1 Keep / move / delete list, then apply**
@@ -253,8 +258,9 @@
 | date | run folder | split | config (diff from the baseline) | metrics | note |
 |---|---|---|---|---|---|
 | 2026-11-16 | `results/repro_1.1` | valid, seed 42 | reproduction of Models 1–3, no change | M2/M3 classification identical; pixel ρ M1 0.9252, M2 0.9485, M3 0.8453; M1 classification differs from Table 6 (0.384 vs 0.343) | task 1.1 |
+| 2026-11-17 | `tests/golden/golden.json` | valid (8 samples), seed 0 | none (golden + unit tests) | pytest 14 passed; pred MSE 6.83e-4 | task 1.2 |
 
 ## Next session: start here
-- First bullet: **1.2 Golden output and first real tests** (1.1 done).
+- First bullet: **2.1 Keep / move / delete list, then apply** (1.1 and 1.2 done; 2.1 needs your approval of the list first).
 - Branch: `improvements-nov2026`.
 - How to start: see `CLAUDE.md` ("Starting a session"). Nothing blocks 1.1.
