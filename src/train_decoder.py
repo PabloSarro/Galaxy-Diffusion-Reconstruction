@@ -15,11 +15,17 @@ from helpers import (
 )
 
 import argparse
+from training import run_training
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--loss", type=str, default="MSE", choices=["MSE", "MSE_MAE", "MSE_Grad", "Charbonnier", "Weighted"])
 parser.add_argument("--alpha",type=float, default=1.0)
+parser.add_argument("--epochs", type=int, default=200)
+parser.add_argument("--output-prefix", default="../results/7-with_shape_noise",
+                    help="Run folder root. Default is the reported Model 3 folder: do not point test runs there.")
+parser.add_argument("--resume", action="store_true",
+                    help="Continue from <run>/training/last.pt if it exists (else start fresh).")
 
 args = parser.parse_args()
 
@@ -29,7 +35,7 @@ SPARSITY = 0.70
 NOISE_STD = 0.22 # 0.005 too optimistic # 0 to try
 
 # Training parameters
-EPOCHS = 200 # Set to 2/3 for short runs
+EPOCHS = args.epochs # default 200; use a smaller value for short runs
 BATCH_SIZE = 32
 LR = 5e-4
 DEBUG = False # Set to True for short runs
@@ -37,7 +43,7 @@ LOSS_METHOD = args.loss
 ALPHA = args.alpha
 
 # Output parameters
-PREFIX = "../results/7-with_shape_noise"
+PREFIX = args.output_prefix
 OUTPUT_DIR = os.path.join(PREFIX, LOSS_METHOD)
 
 TRAINING_DIR = os.path.join(OUTPUT_DIR, "training")
@@ -62,12 +68,13 @@ set_seed(42)
 dataset = GalaxyDataset(data_folder="../data-full/")
 
 train_dataset, valid_dataset = generate_train_valid_datasets(dataset, frac=0.8)
+LOADER_GEN = torch.Generator().manual_seed(42)  # saved in last.pt so resumed runs see the same batch order
 
 train_loader = DataLoader(
     train_dataset,
     batch_size=BATCH_SIZE,
     shuffle=True,
-    generator=torch.Generator().manual_seed(42), # Done to provide the optimizer with the same batch order across different runs, for better comparison.
+    generator=LOADER_GEN, # Done to provide the optimizer with the same batch order across different runs, for better comparison.
     pin_memory=True,
     num_workers=1
 )
@@ -97,78 +104,21 @@ optimizer = torch.optim.AdamW(
     weight_decay=1e-4
 )
 
-# Training Loop
-train_losses = []
-valid_losses = []
-best_loss = float("inf")
-
-
-for epoch in range(EPOCHS):
-    start = time.time()
-    total_train_loss = 0
-    debug_print = True
-
-    for x0, norms, num_gals in train_loader:
-        x0 = x0.to(device, non_blocking=True)
-        norms = norms.to(device, non_blocking=True)
-        num_gals = num_gals.to(device, non_blocking=True)
-        
-        optimizer.zero_grad()
-
-        # Degrade the true image
-        x_noised, _ = degradation.degrade(x0, norms, num_gals)
-
-        # Predict image from degraded image.
-        x0_pred = decoder(x_noised)
-
-        # Loss function between predicted map and true image
-        loss = decoder_loss(x0_pred, x0, method=LOSS_METHOD, alpha=ALPHA)
-        
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(decoder.parameters(), max_norm=5.0)
-        optimizer.step()
-
-        if DEBUG and debug_print:
-            print(f"[DEBUG Epoch {epoch+1}]:")
-            print(f"x_0 min          = {x0.min().item():.4f}, max={x0.max().item():.4f}, mean={x0.mean().item():.4f}")
-            print(f"x_noised min     = {x_noised.min().item():.4f}, max={x_noised.max().item():.4f}, mean={x_noised.mean().item():.4f}")
-            print(f"predicted_x0 min = {x0_pred.min().item():.4f}, max={x0_pred.max().item():.4f}")
-            print(f"loss             = {loss.item():.4f}")
-            debug_print = False # One DEBUG print per epoch.
-
-        total_train_loss += loss.item()
-
-    epoch_train_loss = total_train_loss / len(train_loader)
-    train_losses.append(epoch_train_loss)
-
-    
-    # Validation Loop
-    decoder.eval()
-    total_valid_loss = 0
-
-    with torch.no_grad():
-        for x0, norms, num_gals in valid_loader:
-            x0 = x0.to(device, non_blocking=True)
-            norms = norms.to(device, non_blocking=True)
-            num_gals = num_gals.to(device, non_blocking=True)
-
-            x_t, _ = degradation.degrade(x0, norms, num_gals)
-            x0_pred = decoder(x_t)
-
-            loss = decoder_loss(x0_pred, x0, method=LOSS_METHOD, alpha=ALPHA)
-            total_valid_loss += loss.item()
-
-    epoch_valid_loss = total_valid_loss / len(valid_loader)
-    valid_losses.append(epoch_valid_loss)
-
-    decoder.train()
-
-    print(f"Epoch {epoch+1}/{EPOCHS} --> Train: {epoch_train_loss:.6f} | Valid: {epoch_valid_loss:.6f} (in {time.time()-start:.1f}s).")
-
-    if epoch_valid_loss < best_loss:
-        best_loss = epoch_valid_loss
-        torch.save(decoder.state_dict(), BEST_MODEL_PATH)
-        print("   Best model was stored")
+# Training Loop (checkpointed; see src/training.py)
+train_losses, valid_losses, best_loss = run_training(
+    decoder=decoder,
+    optimizer=optimizer,
+    degradation=degradation,
+    train_loader=train_loader,
+    valid_loader=valid_loader,
+    loader_gen=LOADER_GEN,
+    epochs=EPOCHS,
+    out_dir=TRAINING_DIR,
+    loss_method=LOSS_METHOD,
+    alpha=ALPHA,
+    device=device,
+    resume=args.resume,
+)
 
 
 # POST-TRAINING ANALYSIS

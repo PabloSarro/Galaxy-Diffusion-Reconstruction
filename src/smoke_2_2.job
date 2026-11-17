@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH --job-name=Smoke22
+#SBATCH --time=01:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=32G
+#SBATCH --account=cs-302
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../results/smoke_2.2/job_%j.log
+#SBATCH --error=../results/smoke_2.2/job_%j.err
+
+# Task 2.2 smoke test on real data: 1 epoch, then resume to 2 epochs. Scratch folder only.
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+OUT=../results/smoke_2.2/run
+echo "host=$(hostname) date=$(date)"; nvidia-smi --query-gpu=name --format=csv,noheader
+$PY -u train_decoder.py --epochs 1 --output-prefix "$OUT"
+echo "--- resume ---"
+$PY -u train_decoder.py --epochs 2 --output-prefix "$OUT" --resume
+echo "done $(date)"

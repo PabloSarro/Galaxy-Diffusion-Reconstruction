@@ -107,7 +107,7 @@
     - Repo map updated in `CLAUDE.md`.
     - Commit: `Repository Cleaned Up`. Decided: `report/` stays git-ignored (not tracked).
 
-- `[-]` **2.2 Resumable training: last + best checkpoints**
+- `[~]` **2.2 Resumable training: last + best checkpoints**
   - Goal: every training script saves `last` and `best` and can resume after a killed job.
   - Why: Slurm wall limit unknown (QoS max seen: 3 days for gpu/math-454, 7.5 for cs-302). `train_decoder.py` saves only `decoder_best.pt`.
   - Steps:
@@ -118,7 +118,11 @@
     - Check the exact QoS wall limit of the account used and note it here.
   - Effort: 3 h / 0 GPU-h.
   - Success: test passes; golden still reproduced; must be done before 3.2 (first retraining).
-  - Outcome (date):
+  - Outcome (2026-11-17, in progress): code + tests done. `src/training.py` (atomic `last.pt` each epoch with model, optimizer, losses, all RNG and loader-generator states; `decoder_best.pt` kept as before). `train_decoder.py`: `--epochs`, `--resume`, `--output-prefix` (default = Model 3 folder; do not use for tests). `train_decoder.job`: cs-302, 72 h, resubmit the same command.
+    - Tests: 17 passed (incl. `tests/test_resume.py`: interrupted + resumed run equals uninterrupted run, exact).
+    - Smoke test on real data pending: job 3255806 (`src/smoke_2_2.job`, 1 epoch then resume to 2) -> `results/smoke_2.2/`. Check: log has "Resumed from ... after 1 completed epochs".
+    - QoS: cs-302 MaxWall 7-12:00:00 (checked 2026-11-17).
+
 
 ### 3 Cold diffusion as the main approach
 - `[-]` **3.1 Fair evaluation protocol**

@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH --job-name=TrainDec
+#SBATCH --time=72:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=32G
+#SBATCH --account=cs-302
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=train_decoder_%j.log
+#SBATCH --error=train_decoder_%j.err
+
+# Resumable: --resume continues from <run>/training/last.pt if present, else starts fresh.
+# If the job hits the wall limit, resubmit the SAME command: sbatch train_decoder.job
+# Usage (from src/):  sbatch train_decoder.job   (extra args: LOSS / ALPHA are set via env vars below)
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+LOSS=${LOSS:-MSE}
+ALPHA=${ALPHA:-1.0}
+EPOCHS=${EPOCHS:-200}
+OUT=${OUT:-../results/7-with_shape_noise}
+echo "host=$(hostname) date=$(date) loss=$LOSS epochs=$EPOCHS out=$OUT"
+$PY -u train_decoder.py --loss "$LOSS" --alpha "$ALPHA" --epochs "$EPOCHS" --output-prefix "$OUT" --resume
