@@ -68,7 +68,8 @@ def run_training(decoder, optimizer, degradation, train_loader, valid_loader, lo
 
     start_epoch, best_loss, train_losses, valid_losses = 0, float("inf"), [], []
     if resume and os.path.isfile(last_path):
-        ckpt = torch.load(last_path, map_location=device, weights_only=False)
+        # Load on CPU: RNG and generator states must be CPU ByteTensors; load_state_dict moves weights to the device.
+        ckpt = torch.load(last_path, map_location="cpu", weights_only=False)
         decoder.load_state_dict(ckpt["model"])
         optimizer.load_state_dict(ckpt["optimizer"])
         best_loss = ckpt["best_loss"]

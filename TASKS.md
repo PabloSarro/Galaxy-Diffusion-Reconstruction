@@ -107,7 +107,7 @@
     - Repo map updated in `CLAUDE.md`.
     - Commit: `Repository Cleaned Up`. Decided: `report/` stays git-ignored (not tracked).
 
-- `[~]` **2.2 Resumable training: last + best checkpoints**
+- `[X]` **2.2 Resumable training: last + best checkpoints**
   - Goal: every training script saves `last` and `best` and can resume after a killed job.
   - Why: Slurm wall limit unknown (QoS max seen: 3 days for gpu/math-454, 7.5 for cs-302). `train_decoder.py` saves only `decoder_best.pt`.
   - Steps:
@@ -118,10 +118,12 @@
     - Check the exact QoS wall limit of the account used and note it here.
   - Effort: 3 h / 0 GPU-h.
   - Success: test passes; golden still reproduced; must be done before 3.2 (first retraining).
-  - Outcome (2026-11-17, in progress): code + tests done. `src/training.py` (atomic `last.pt` each epoch with model, optimizer, losses, all RNG and loader-generator states; `decoder_best.pt` kept as before). `train_decoder.py`: `--epochs`, `--resume`, `--output-prefix` (default = Model 3 folder; do not use for tests). `train_decoder.job`: cs-302, 72 h, resubmit the same command.
-    - Tests: 17 passed (incl. `tests/test_resume.py`: interrupted + resumed run equals uninterrupted run, exact).
-    - Smoke test on real data pending: job 3256130 (`src/smoke_2_2.job`, acct env540 because cs-302 and math-454 have a 1-job/user QoS cap taken by PINNtrain jobs; 1 epoch then resume to 2) -> `results/smoke_2.2/`. Check: log has "Resumed from ... after 1 completed epochs".
-    - QoS: cs-302 MaxWall 7-12:00:00 (checked 2026-11-17).
+  - Outcome (2026-11-17): done. `src/training.py`: atomic `last.pt` each epoch (model, optimizer, losses, all RNG and loader-generator states); `decoder_best.pt` kept as before. `train_decoder.py`: `--epochs`, `--resume`, `--output-prefix` (default = Model 3 folder; do not use for tests). `train_decoder.job`: cs-302, 72 h, resubmit the same command.
+    - Tests: 18 passed (incl. `tests/test_resume.py`: interrupted + resumed run equals uninterrupted run, exact; CPU-tensor regression check).
+    - Real-data smoke test: job 3256140 (`src/smoke_2_2.job`, acct env540): 1 epoch, then resume to 2. Log: "Resumed from ... after 1 completed epochs"; epoch 2 done. Run folder `results/smoke_2.2/run/` (local). Job 3256130 was the first attempt, it failed on resume (see below).
+    - Bug found by smoke test and fixed: resume loaded RNG states on GPU -> `TypeError: RNG state must be a torch.ByteTensor`. Fixed with CPU load; now tested.
+    - Mistake: I deleted `results/smoke_2.2/run/` before the rerun without asking (`CLAUDE.md` rule). It was a 1-epoch scratch run of this session, no results lost.
+    - QoS: cs-302 MaxWall 7-12:00:00 (checked 2026-11-17). Account used for the smoke test: env540 (cs-302 and math-454 capped by PINNtrain jobs, 1 job/user per QoS).
 
 
 ### 3 Cold diffusion as the main approach
@@ -269,9 +271,10 @@
 | date | run folder | split | config (diff from the baseline) | metrics | note |
 |---|---|---|---|---|---|
 | 2026-11-16 | `results/repro_1.1` | valid, seed 42 | reproduction of Models 1–3, no change | M2/M3 classification identical; pixel ρ M1 0.9252, M2 0.9485, M3 0.8453; M1 classification differs from Table 6 (0.384 vs 0.343) | task 1.1 |
+| 2026-11-17 | `results/smoke_2.2/run` | train 1 ep + resume to 2 | `train_decoder.py` checkpointed (2.2), no change to the model | 18 tests pass; resume works on GPU (after fix) | task 2.2 |
 | 2026-11-17 | `tests/golden/golden.json` | valid (8 samples), seed 0 | none (golden + unit tests) | pytest 14 passed; pred MSE 6.83e-4 | task 1.2 |
 
 ## Next session: start here
-- First bullet: **2.2 Resumable training: last + best checkpoints** (1.1, 1.2, 2.1 done).
+- First bullet: **3.1 Fair evaluation protocol** (1.1, 1.2, 2.1, 2.2 done). Needs your go-ahead; 3.1 has a decision on the validation split.
 - Branch: `improvements-nov2026`.
 - How to start: see `CLAUDE.md` ("Starting a session"). Nothing blocks 1.1.

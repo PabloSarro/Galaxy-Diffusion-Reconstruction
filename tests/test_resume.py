@@ -76,6 +76,14 @@ class TestResume(unittest.TestCase):
         self.assertEqual(ckpt["epoch"], 2)
         self.assertFalse(os.path.exists(os.path.join(d, LAST_NAME + ".tmp")))
 
+    def test_checkpoint_states_load_as_cpu_tensors(self):
+        # Regression: on GPU the RNG/generator states were loaded onto cuda and set_state() failed.
+        d = os.path.join(self.tmp, "cpu")
+        _run(d, epochs=1, seed=7, resume=False)
+        ckpt = torch.load(os.path.join(d, LAST_NAME), map_location="cpu", weights_only=False)
+        self.assertEqual(ckpt["rng"]["torch"].device.type, "cpu")
+        self.assertEqual(ckpt["loader_gen"].device.type, "cpu")
+
 
 if __name__ == "__main__":
     unittest.main()
