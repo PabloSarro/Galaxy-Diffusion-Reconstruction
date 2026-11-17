@@ -12,7 +12,19 @@ results live in `TASKS.md`. This file only says how to work.
 ## Repository map
 "src/" features the model, training, evaluation, data loading, and more source files, with results the outcomes.
 - Data: "data-full/". Read-only: never write, move or delete anything there.
-- Keep this map current: update it whenever the structure changes (e.g. after the cleanup task).
+- `src/`: `model.py`, `dataset.py`, `degradation.py`, `helpers.py` (split, metrics), `train_decoder.py`
+  (+ `.job`), `eval_args.py`, `eval_pixel.py`, `compare_logs.py`, `classification.py` (+ `.job`),
+  `visualise_imgs.py` (+ `.job`), `repro_1_1.job`.
+- `tests/`: `test_units.py`, `golden/` (golden.json + golden test), `eval/` (CLI and log-compare tests).
+  Run: `envSummer1_conda/bin/python -m pytest tests` (about 5 min, golden loads data on CPU).
+- `results/`: `Reconstruction/Model {1,2,3}` (decoder checkpoints + training logs), `Classification/`
+  (classifier `network_v8_1.pth`, logs), `repro_1.1/` (local, untracked).
+- `report/`: LaTeX sources (`shear_reconstruction.tex`, `LASTRO - Summer Project Report.tex`,
+  `images/`); `report.zip` is the original bundle. Git-ignored.
+- `archive/`: retired code, old results, the old tests scripts (git-ignored; see `archive/MOVED.md`).
+- `envSummer1_conda/`: conda env used by the jobs (git-ignored). `data-full/`: data (read-only).
+- Outside the repo: `/home/sarro/external/PyTorch-Network-Loader` (pin `0a12e38`).
+- Keep this map current: update it whenever the structure changes.
 
 ## Starting a session
 - Always inside screen (tmux is not installed on izar), so the session survives SSH

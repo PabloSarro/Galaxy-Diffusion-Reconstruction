@@ -25,3 +25,6 @@ __pycache__/
 *.png
 *.err
 *.txt
+# Archive of retired code/results (local only, see archive/MOVED.md)
+archive/
+.pytest_cache/

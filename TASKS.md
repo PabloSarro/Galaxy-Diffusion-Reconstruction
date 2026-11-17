@@ -83,7 +83,7 @@
     - Note: `degradation.py` treats |g|>1 pixels differently, even at σ=0 (not identity there). Left as is.
 
 ### 2 Clean up the structure
-- `[-]` **2.1 Keep / move / delete list, then apply**
+- `[X]` **2.1 Keep / move / delete list, then apply**
   - Goal: a small repo where every folder has one purpose.
   - Why: 6.2 GB `old_results/`, 295 PNGs, a 197 MB installer, stale `__pycache__` of removed modules.
   - Steps:
@@ -98,7 +98,14 @@
     - Run tests + golden; update the repository map in `CLAUDE.md`.
   - Effort: 4 h / 0 GPU-h.
   - Success: tests + golden pass; repo map matches the tree; nothing deleted without approval.
-  - Outcome (date):
+  - Outcome (2026-11-17): applied; `pytest` 14 passed (golden unchanged). Nothing deleted.
+    - Moved to `archive/` (git-ignored; list in `archive/MOVED.md`): `old_results/`, `old_src/`, `EDA/`, `miniconda.sh`, `results/old_reconstr/`, and the untracked `tests/{degradations,losses,classification}`.
+    - Moved outside repo: `PyTorch-Network-Loader/` -> `/home/sarro/external/`.
+    - Kept: `envSummer1_conda/` (22 GB, in use by the jobs; not removed); git-ignored.
+    - Unpacked `report/report.zip` into `report/`. Its images match the existing ones; its main `.tex` ("LASTRO - Summer Project Report.tex") differs from `shear_reconstruction.tex` in 2 sentences. Both kept.
+    - `.gitignore`: `archive/`, `.pytest_cache/` added. `report/` is still git-ignored (open question).
+    - Repo map updated in `CLAUDE.md`.
+    - Commit: `Repository Cleaned Up`. Open: `report/` stays git-ignored (track it or not?).
 
 - `[-]` **2.2 Resumable training: last + best checkpoints**
   - Goal: every training script saves `last` and `best` and can resume after a killed job.
@@ -261,6 +268,6 @@
 | 2026-11-17 | `tests/golden/golden.json` | valid (8 samples), seed 0 | none (golden + unit tests) | pytest 14 passed; pred MSE 6.83e-4 | task 1.2 |
 
 ## Next session: start here
-- First bullet: **2.1 Keep / move / delete list, then apply** (1.1 and 1.2 done; 2.1 needs your approval of the list first).
+- First bullet: **2.2 Resumable training: last + best checkpoints** (1.1, 1.2, 2.1 done).
 - Branch: `improvements-nov2026`.
 - How to start: see `CLAUDE.md` ("Starting a session"). Nothing blocks 1.1.
