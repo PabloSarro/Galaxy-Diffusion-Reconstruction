@@ -120,7 +120,7 @@
   - Success: test passes; golden still reproduced; must be done before 3.2 (first retraining).
   - Outcome (2026-11-17, in progress): code + tests done. `src/training.py` (atomic `last.pt` each epoch with model, optimizer, losses, all RNG and loader-generator states; `decoder_best.pt` kept as before). `train_decoder.py`: `--epochs`, `--resume`, `--output-prefix` (default = Model 3 folder; do not use for tests). `train_decoder.job`: cs-302, 72 h, resubmit the same command.
     - Tests: 17 passed (incl. `tests/test_resume.py`: interrupted + resumed run equals uninterrupted run, exact).
-    - Smoke test on real data pending: job 3255806 (`src/smoke_2_2.job`, 1 epoch then resume to 2) -> `results/smoke_2.2/`. Check: log has "Resumed from ... after 1 completed epochs".
+    - Smoke test on real data pending: job 3256130 (`src/smoke_2_2.job`, acct env540 because cs-302 and math-454 have a 1-job/user QoS cap taken by PINNtrain jobs; 1 epoch then resume to 2) -> `results/smoke_2.2/`. Check: log has "Resumed from ... after 1 completed epochs".
     - QoS: cs-302 MaxWall 7-12:00:00 (checked 2026-11-17).
 
 
