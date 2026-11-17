@@ -105,7 +105,7 @@
     - Unpacked `report/report.zip` into `report/`. Its images match the existing ones; its main `.tex` ("LASTRO - Summer Project Report.tex") differs from `shear_reconstruction.tex` in 2 sentences. Both kept.
     - `.gitignore`: `archive/`, `.pytest_cache/` added. `report/` is still git-ignored (open question).
     - Repo map updated in `CLAUDE.md`.
-    - Commit: `Repository Cleaned Up`. Open: `report/` stays git-ignored (track it or not?).
+    - Commit: `Repository Cleaned Up`. Decided: `report/` stays git-ignored (not tracked).
 
 - `[-]` **2.2 Resumable training: last + best checkpoints**
   - Goal: every training script saves `last` and `best` and can resume after a killed job.
