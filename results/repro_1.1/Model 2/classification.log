@@ -1,0 +1,199 @@
+Loading classifier from: ../results/network_v8_1.pth
+    Done (0.48s)
+Loading U-Net Decoder from: ../results/Reconstruction/Model 2/MSE/training/decoder_best.pt
+/home/sarro/SummerProj/src/classification.py:181: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  decoder.load_state_dict(torch.load(DECODER_PATH, map_location=device))
+    Done (0.07s)
+Loading degradation with: sp=0.7, stds in [[0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.15, 0.2, 0.22, 0.3]]
+    Done (0.00s)
+Loading data from: ../data-full/
+    Using the full validation split: 240/720 samples per class with DARKSKIES/BAHAMAS.
+    Done (4.45s)
+Generating Noisy, U-Net, and kNN datasets...
+    Done (177.35s)
+
+======== Evaluation loop starting... (Results saving to ../results/repro_1.1/Model 2/classification) ========
+
+------ Predicting: 1. Noise-Free ------
+Prediction time: 7.859e+01 s
+
+Evaluating: 1. Noise-Free...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [2 0 0 0 0 3 1 1 3 3]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 1. Noise-Free.png
+  -> Metrics: Acc: 0.612 | Prec: 0.586 | Rec: 0.588 | F1: 0.580
+  Done (79.19s)
+
+------ Predicting: 2. Noisy ------
+Prediction time: 7.889e+01 s
+
+Evaluating: 2. Noisy...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [1 1 1 1 1 1 1 1 1 1]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 2. Noisy.png
+  -> Metrics: Acc: 0.203 | Prec: 0.046 | Rec: 0.145 | F1: 0.056
+  Done (79.41s)
+
+------ Predicting: 3. U-Net-degr0.005 ------
+Prediction time: 8.034e+01 s
+
+Evaluating: 3. U-Net-degr0.005...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [2 0 2 0 0 3 0 0 1 1]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.005.png
+  -> Metrics: Acc: 0.237 | Prec: 0.347 | Rec: 0.286 | F1: 0.218
+  Done (80.88s)
+
+------ Predicting: 3. U-Net-degr0.0075 ------
+Prediction time: 8.033e+01 s
+
+Evaluating: 3. U-Net-degr0.0075...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [0 0 0 0 0 3 0 1 1 1]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.0075.png
+  -> Metrics: Acc: 0.207 | Prec: 0.297 | Rec: 0.230 | F1: 0.161
+  Done (80.86s)
+
+------ Predicting: 3. U-Net-degr0.01 ------
+Prediction time: 8.081e+01 s
+
+Evaluating: 3. U-Net-degr0.01...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [1 0 0 0 0 1 0 0 1 1]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.01.png
+  -> Metrics: Acc: 0.216 | Prec: 0.312 | Rec: 0.198 | F1: 0.134
+  Done (81.33s)
+
+------ Predicting: 3. U-Net-degr0.025 ------
+Prediction time: 8.032e+01 s
+
+Evaluating: 3. U-Net-degr0.025...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [3 3 3 0 1 1 3 1 1 1]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.025.png
+  -> Metrics: Acc: 0.237 | Prec: 0.282 | Rec: 0.171 | F1: 0.129
+  Done (80.88s)
+
+------ Predicting: 3. U-Net-degr0.05 ------
+Prediction time: 8.039e+01 s
+
+Evaluating: 3. U-Net-degr0.05...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [3 3 3 1 3 3 3 3 3 3]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.05.png
+  -> Metrics: Acc: 0.210 | Prec: 0.115 | Rec: 0.150 | F1: 0.092
+  Done (80.92s)
+
+------ Predicting: 3. U-Net-degr0.075 ------
+Prediction time: 8.045e+01 s
+
+Evaluating: 3. U-Net-degr0.075...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [3 5 3 5 3 3 3 3 3 3]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.075.png
+  -> Metrics: Acc: 0.213 | Prec: 0.132 | Rec: 0.153 | F1: 0.095
+  Done (80.98s)
+
+------ Predicting: 3. U-Net-degr0.1 ------
+Prediction time: 8.053e+01 s
+
+Evaluating: 3. U-Net-degr0.1...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [3 3 3 1 3 1 1 3 3 3]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.1.png
+  -> Metrics: Acc: 0.217 | Prec: 0.124 | Rec: 0.156 | F1: 0.105
+  Done (81.06s)
+
+------ Predicting: 3. U-Net-degr0.15 ------
+Prediction time: 8.048e+01 s
+
+Evaluating: 3. U-Net-degr0.15...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [3 3 3 1 1 1 1 3 1 3]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.15.png
+  -> Metrics: Acc: 0.216 | Prec: 0.108 | Rec: 0.155 | F1: 0.108
+  Done (81.02s)
+
+------ Predicting: 3. U-Net-degr0.2 ------
+Prediction time: 8.019e+01 s
+
+Evaluating: 3. U-Net-degr0.2...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [3 3 3 1 1 1 1 3 1 1]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.2.png
+  -> Metrics: Acc: 0.215 | Prec: 0.109 | Rec: 0.154 | F1: 0.108
+  Done (80.71s)
+
+------ Predicting: 3. U-Net-degr0.22 ------
+Prediction time: 8.043e+01 s
+
+Evaluating: 3. U-Net-degr0.22...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [3 3 3 1 1 1 1 3 1 3]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.22.png
+  -> Metrics: Acc: 0.213 | Prec: 0.138 | Rec: 0.153 | F1: 0.107
+  Done (80.96s)
+
+------ Predicting: 3. U-Net-degr0.3 ------
+Prediction time: 7.969e+01 s
+
+Evaluating: 3. U-Net-degr0.3...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [3 1 1 1 1 1 1 3 1 3]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 3. U-Net-degr0.3.png
+  -> Metrics: Acc: 0.218 | Prec: 0.113 | Rec: 0.156 | F1: 0.109
+  Done (80.38s)
+
+------ Predicting: 4. kNN ------
+Prediction time: 8.011e+01 s
+
+Evaluating: 4. kNN...
+
+True Labels: [0 0 0 0 0 1 1 1 1 1]
+Predicted Labels: [0 2 0 0 0 1 1 1 1 3]
+Unique target values: [0 1 2 3 4 5 6]
+
+  -> Saved plot: 4. kNN.png
+  -> Metrics: Acc: 0.206 | Prec: 0.315 | Rec: 0.225 | F1: 0.168
+  Done (80.65s)
+
+Total evaluation time: 1311.60s

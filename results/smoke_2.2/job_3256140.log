@@ -1,0 +1,55 @@
+host=i21 date=mar 17 nov 2026 19:40:47 CET
+Tesla V100-PCIE-32GB
+=====================================================
+============= CONFIGURATION FOR THE RUN =============
+=====================================================
+
+Sparsity: 0.7 | Noise std: 0.22
+Epochs: 1 | Batch: 32 | lr: 0.0005
+Loss: MSE | Alpha: 1.0
+Storage path: ../results/smoke_2.2/run/MSE
+
+USING DEVICE: cuda
+Epoch 1/1 --> Train: 0.004923 | Valid: 0.002797.
+   Best model was stored
+
+=== Cold Diffusion Evaluation Summary ===
+
+1. Baseline (Worst-Case): xT vs. x0
+MSE     : 61.381191
+Pearson : 0.0550
+
+2. Direct Prediction: xT -> hat[x0]
+MSE     : 0.002105
+Pearson : 0.6275
+MSE + Pearson Evaluation took 2.2s.
+
+Plotting all 10 reconstructed images took 2.6s.
+--- resume ---
+=====================================================
+============= CONFIGURATION FOR THE RUN =============
+=====================================================
+
+Sparsity: 0.7 | Noise std: 0.22
+Epochs: 2 | Batch: 32 | lr: 0.0005
+Loss: MSE | Alpha: 1.0
+Storage path: ../results/smoke_2.2/run/MSE
+
+USING DEVICE: cuda
+Resumed from ../results/smoke_2.2/run/MSE/training/last.pt after 1 completed epochs.
+Epoch 2/2 --> Train: 0.002607 | Valid: 0.002351.
+   Best model was stored
+
+=== Cold Diffusion Evaluation Summary ===
+
+1. Baseline (Worst-Case): xT vs. x0
+MSE     : 62.527212
+Pearson : 0.0546
+
+2. Direct Prediction: xT -> hat[x0]
+MSE     : 0.001778
+Pearson : 0.7117
+MSE + Pearson Evaluation took 2.2s.
+
+Plotting all 10 reconstructed images took 2.6s.
+done mar 17 nov 2026 19:45:44 CET

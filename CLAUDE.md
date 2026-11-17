@@ -34,7 +34,8 @@ results live in `TASKS.md`. This file only says how to work.
 - Anything long that you start (training, evaluation, sweeps) goes into a cluster job or its own
   named screen window, with its output logged to a file. Never a bare background process.
 - Slurm: before every job, run `sshare -U -u $USER` and submit with the account that has the
-  highest FairShare (accounts: cs-302, env540, math-454, master; partition gpu).
+  highest FairShare (accounts: cs-302, env540, math-454, master; partition gpu), but in case 
+  'QOSMaxJobsPerUserLimit' is obtained, try the second with the highest FairShare, and so on.
 
 ## TASKS.md is the single source of truth
 - A fresh session must see from it alone everything that was done, every outcome, and what's
@@ -54,6 +55,8 @@ results live in `TASKS.md`. This file only says how to work.
   is not a gain. Report the mean, the spread, and which seed was picked by which rule.
 - An ablation is the baseline plus one change. Retrain the baseline whenever training-relevant
   code changes.
+- Whenever you want to delete something, either think again about it, or let me know about that
+  and allow me to have the final decision.
 - Every refactor must pass the tests and reproduce the golden baseline output (identical, or
   within the tolerance stated in `TASKS.md`).
 - Every new script or module gets a unit test.
