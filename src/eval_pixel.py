@@ -14,13 +14,40 @@ from helpers import set_seed, generate_train_valid_datasets, evaluate_cold_diffu
 from eval_args import add_eval_args
 
 
+def main_split(args):
+    """Score on a saved split (per class, full split). Writes JSON next to the log."""
+    import json, os
+    from splits import load_split
+    from eval_split import score_split
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    dataset = GalaxyDataset(data_folder=args.data_folder)
+    split, meta = load_split(args.split_file)
+    degradation = Degradation(sparsity=args.sparsity, noise_std=args.noise_std, device=device)
+    decoder = Decoder().to(device)
+    decoder.load_state_dict(torch.load(args.decoder_path, map_location=device, weights_only=True))
+    res = score_split(decoder, degradation, dataset, split[args.split], dataset.targets,
+                      device=device, batch_size=args.batch_size)
+    res["meta"] = {"decoder": args.decoder_path, "split": args.split, "split_file": args.split_file,
+                   "sparsity": args.sparsity, "noise_std": args.noise_std, "torch": torch.__version__}
+    os.makedirs(args.output_dir, exist_ok=True)
+    out = os.path.join(args.output_dir, f"pixel_{args.split}.json")
+    with open(out, "w") as f:
+        json.dump(res, f, indent=2)
+    print(json.dumps(res["overall"]), "->", out)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     add_eval_args(parser)
     parser.add_argument("--noise-std", type=float, required=True, help="Single sigma to evaluate at")
+    parser.add_argument("--split-file", default=None,
+                        help="Grouped split JSON (task 3.1). If given, score the full split per class.")
+    parser.add_argument("--split", default="valid", choices=["train", "valid", "test"])
     parser.add_argument("--max-batches", type=int, default=20,
                         help="Batches of the validation loader (train_decoder.py used 20); 0 = all")
     args = parser.parse_args(argv)
+    if args.split_file:
+        return main_split(args)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"USING DEVICE: {device} | torch {torch.__version__}")

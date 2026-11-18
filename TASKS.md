@@ -127,7 +127,7 @@
 
 
 ### 3 Cold diffusion as the main approach
-- `[-]` **3.1 Fair evaluation protocol**
+- `[~]` **3.1 Fair evaluation protocol**
   - Goal: one evaluation that every model, kNN included, goes through.
   - Why: the report's Table 7 compares U-Nets at σ=0.22 with kNN at σ=0.005; all values are at chance.
   - Steps:
@@ -146,7 +146,10 @@
     - Config file + seed argument per run; unit tests for all of the above.
   - Effort: 10 h / 2 GPU-h.
   - Success: existing checkpoints re-scored; a table with matched-σ kNN and chance levels.
-  - Outcome (date):
+  - Outcome (2026-11-18, partial): split built and saved: `results/splits/split_v1.json` (seed 0, 70/15/15 by group, class fractions exact: train 12600, valid 2700, test 2700). Group keys: BAHAMAS `clusterID` (same cluster across σ files), DARKSKIES (file, `ID_minpot`); `ID` is not a halo key (one group of 768 maps). Code: `src/splits.py`, `src/eval_split.py`, `src/dataset.py` (`groups`), `eval_pixel.py --split-file`; tests `tests/test_splits.py`, `tests/test_eval_split.py`.
+    - Re-score of Models 1–3 on the new VALID split (job 3257710, `results/split_v1/Model N/pixel_valid.json`): M1 ρ 0.951 (MSE 2.2e-4), M2 ρ 0.980 (2.9e-5), M3 ρ 0.877 (9.6e-4). NOT a fair number: 80% of new valid samples (223/225 groups) were in the old random train split. Use only as a leakage measurement; fair numbers come after 3.2.
+    - Test split still unread.
+    - Remaining in 3.1: kNN and raw-degraded at each σ on the new split; classification on the new split; χ and Kaiser–Squires metrics; MSE=62 check; classifier provenance (3.1 list).
 - `[-]` **3.2 Retrain the direct U-Net as baseline B1**
   - Goal: the current structure, retrained under 3.1, as the number to beat.
   - Why: split and code changed; all reported claims are single-seed.
@@ -275,6 +278,6 @@
 | 2026-11-17 | `tests/golden/golden.json` | valid (8 samples), seed 0 | none (golden + unit tests) | pytest 14 passed; pred MSE 6.83e-4 | task 1.2 |
 
 ## Next session: start here
-- First bullet: **3.1 Fair evaluation protocol** (1.1, 1.2, 2.1, 2.2 done). Needs your go-ahead; 3.1 has a decision on the validation split.
+- First bullet: **3.1 remaining steps** (split done; see its Outcome). Then 3.2 (retrain B1 on the new train split).
 - Branch: `improvements-nov2026`.
 - How to start: see `CLAUDE.md` ("Starting a session"). Nothing blocks 1.1.

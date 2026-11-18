@@ -22,6 +22,7 @@ class GalaxyDataset(Dataset):
         self.num_gals = []
         self.cross_sections = []
         self.targets = []
+        self.groups = []  # cluster/halo key per sample, used for grouped splits (task 3.1)
 
         files = glob.glob(
             os.path.join(data_folder, "*.pkl")
@@ -74,12 +75,22 @@ class GalaxyDataset(Dataset):
 
             self.targets.extend([class_idx] * n_samples)
 
+            # Group key: BAHAMAS maps of one cluster share clusterID across all sigma files;
+            # DARKSKIES halos are unique within a file (ID_minpot), and no halo is in two files.
+            if "bahamas" in filename:
+                keys = [f"B:{c}" for c in metadata["clusterID"]]
+            else:
+                keys = [f"D:{filename}:{h}" for h in metadata["ID_minpot"]]
+            assert len(keys) == n_samples
+            self.groups.extend(keys)
+
         # Merge all files
         self.images = np.concatenate(self.images, axis=0)
         self.norms = np.concatenate(self.norms, axis=0)
         self.num_gals = np.concatenate(self.num_gals, axis=0)
         self.cross_sections = np.array(self.cross_sections)
         self.targets = np.array(self.targets)
+        self.groups = np.array(self.groups)
 
     def __len__(self):
         return len(self.images)

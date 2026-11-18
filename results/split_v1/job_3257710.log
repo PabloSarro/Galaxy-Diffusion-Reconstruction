@@ -1,0 +1,6 @@
+host=i48 date=mer 18 nov 2026 19:13:27 CET
+Tesla V100-PCIE-32GB
+{"mse": 0.0002169338393683194, "rho": 0.9508777556180278, "n": 2700} -> ../results/split_v1/Model 1/pixel_valid.json
+{"mse": 2.874981164543247e-05, "rho": 0.9797618911757064, "n": 2700} -> ../results/split_v1/Model 2/pixel_valid.json
+{"mse": 0.0009572228895192758, "rho": 0.8765367281814073, "n": 2700} -> ../results/split_v1/Model 3/pixel_valid.json
+done mer 18 nov 2026 19:14:25 CET
