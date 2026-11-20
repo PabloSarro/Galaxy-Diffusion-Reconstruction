@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH --job-name=Cls31
+#SBATCH --time=06:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --account=cs-302
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../results/split_v1/classification/job_%j.log
+#SBATCH --error=../results/split_v1/classification/job_%j.err
+
+# Task 3.1: classifier on the VALID split. Provenance (clean train vs valid), noise-free ceiling,
+# and matched-sigma noisy / kNN / U-Net for Models 1-3. Test split not read.
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+echo "host=$(hostname) date=$(date)"; nvidia-smi --query-gpu=name --format=csv,noheader
+$PY -u classify_split.py --cases clean_train clean_valid \
+  noisy:0.005 knn:0.005 unet:1:0.005 \
+  noisy:0 knn:0 unet:2:0 \
+  noisy:0.22 knn:0.22 unet:3:0.22 \
+  --output ../results/split_v1/classification/classification_valid.json
+echo "done $(date)"

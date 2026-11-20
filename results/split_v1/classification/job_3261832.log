@@ -1,0 +1,27 @@
+host=i11 date=ven 20 nov 2026 08:45:21 CET
+Tesla V100-PCIE-32GB
+device cuda
+Prediction time: 2.981e+00 s
+clean_train {"acc": 0.62, "bal_acc": 0.5860647261998501, "f1_macro": 0.5815431688154106, "chance_acc": 0.245, "n": 200}
+Prediction time: 3.032e+01 s
+clean_valid {"acc": 0.6259259259259259, "bal_acc": 0.6074074074074074, "f1_macro": 0.5996709448676996, "chance_acc": 0.2, "n": 2700}
+Prediction time: 3.001e+01 s
+noisy:0.005 {"acc": 0.19777777777777777, "bal_acc": 0.14126984126984127, "f1_macro": 0.05293589239056112, "chance_acc": 0.2, "n": 2700}
+Prediction time: 2.991e+01 s
+knn:0.005 {"acc": 0.22037037037037038, "bal_acc": 0.24047619047619048, "f1_macro": 0.18117284551975574, "chance_acc": 0.2, "n": 2700}
+Prediction time: 2.945e+01 s
+unet:1:0.005 {"acc": 0.37296296296296294, "bal_acc": 0.406084656084656, "f1_macro": 0.3408305959575416, "chance_acc": 0.2, "n": 2700}
+Prediction time: 2.988e+01 s
+noisy:0 {"acc": 0.21444444444444444, "bal_acc": 0.15317460317460316, "f1_macro": 0.07698100654936743, "chance_acc": 0.2, "n": 2700}
+Prediction time: 2.939e+01 s
+knn:0 {"acc": 0.5233333333333333, "bal_acc": 0.4886243386243386, "f1_macro": 0.49790144218487153, "chance_acc": 0.2, "n": 2700}
+Prediction time: 2.911e+01 s
+unet:2:0 {"acc": 0.5740740740740741, "bal_acc": 0.5671957671957671, "f1_macro": 0.5449283176317978, "chance_acc": 0.2, "n": 2700}
+Prediction time: 2.953e+01 s
+noisy:0.22 {"acc": 0.2, "bal_acc": 0.14285714285714285, "f1_macro": 0.047619047619047616, "chance_acc": 0.2, "n": 2700}
+Prediction time: 2.979e+01 s
+knn:0.22 {"acc": 0.2, "bal_acc": 0.14285714285714285, "f1_macro": 0.047619047619047616, "chance_acc": 0.2, "n": 2700}
+Prediction time: 2.755e+01 s
+unet:3:0.22 {"acc": 0.08962962962962963, "bal_acc": 0.1894179894179894, "f1_macro": 0.0657185234563117, "chance_acc": 0.2, "n": 2700}
+saved ../results/split_v1/classification/classification_valid.json
+done ven 20 nov 2026 08:53:02 CET
