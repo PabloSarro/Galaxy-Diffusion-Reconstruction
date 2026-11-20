@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH --job-name=B1
+#SBATCH --time=12:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=32G
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../results/B1/logs/%x_%j.log
+#SBATCH --error=../results/B1/logs/%x_%j.err
+
+# Task 3.2 baseline B1: direct U-Net, grouped split v1, s=0.7, MSE, 200 epochs.
+# Submit with: sbatch --account=<acct> --job-name=B1_s<sigma>_seed<seed> --export=ALL,SIGMA=<sigma>,SEED=<seed> train_B1.job
+# Resumable: resubmitting the same command continues from last.pt.
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+OUT=../results/B1/sigma${SIGMA}/seed${SEED}
+echo "host=$(hostname) date=$(date) sigma=$SIGMA seed=$SEED out=$OUT"; nvidia-smi --query-gpu=name --format=csv,noheader
+$PY -u train_decoder.py --noise-std "$SIGMA" --seed "$SEED" --epochs 200 \
+    --split-file ../results/splits/split_v1.json --output-prefix "$OUT" --resume
+echo "done $(date)"

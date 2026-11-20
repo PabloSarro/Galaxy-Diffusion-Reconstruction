@@ -24,6 +24,10 @@ parser.add_argument("--alpha",type=float, default=1.0)
 parser.add_argument("--epochs", type=int, default=200)
 parser.add_argument("--output-prefix", default="../results/7-with_shape_noise",
                     help="Run folder root. Default is the reported Model 3 folder: do not point test runs there.")
+parser.add_argument("--noise-std", type=float, default=0.22)
+parser.add_argument("--seed", type=int, default=42)
+parser.add_argument("--split-file", default=None,
+                    help="Grouped split JSON (task 3.1). Default: old random 80/20 split (legacy).")
 parser.add_argument("--resume", action="store_true",
                     help="Continue from <run>/training/last.pt if it exists (else start fresh).")
 
@@ -32,7 +36,7 @@ args = parser.parse_args()
 
 # Degradation parameters
 SPARSITY = 0.70
-NOISE_STD = 0.22 # 0.005 too optimistic # 0 to try
+NOISE_STD = args.noise_std # 0.22 = Model 3 setting; 0 = Model 2 setting
 
 # Training parameters
 EPOCHS = args.epochs # default 200; use a smaller value for short runs
@@ -58,17 +62,24 @@ print("============= CONFIGURATION FOR THE RUN =============")
 print("=====================================================\n")
 print(f"Sparsity: {SPARSITY} | Noise std: {NOISE_STD}")
 print(f"Epochs: {EPOCHS} | Batch: {BATCH_SIZE} | lr: {LR}")
-print(f"Loss: {LOSS_METHOD} | Alpha: {ALPHA}")
+print(f"Loss: {LOSS_METHOD} | Alpha: {ALPHA} | Seed: {args.seed}")
 print(f"Storage path: {OUTPUT_DIR}\n")
 
 
-set_seed(42)
+set_seed(args.seed)
 
 # Dataset
 dataset = GalaxyDataset(data_folder="../data-full/")
 
-train_dataset, valid_dataset = generate_train_valid_datasets(dataset, frac=0.8)
-LOADER_GEN = torch.Generator().manual_seed(42)  # saved in last.pt so resumed runs see the same batch order
+if args.split_file:
+    from splits import load_split
+    _split, _meta = load_split(args.split_file)
+    train_dataset = torch.utils.data.Subset(dataset, _split["train"])
+    valid_dataset = torch.utils.data.Subset(dataset, _split["valid"])  # test split is never loaded here
+    print(f"Split: {args.split_file} (train {len(train_dataset)}, valid {len(valid_dataset)})")
+else:
+    train_dataset, valid_dataset = generate_train_valid_datasets(dataset, frac=0.8)
+LOADER_GEN = torch.Generator().manual_seed(args.seed)  # saved in last.pt so resumed runs see the same batch order
 
 train_loader = DataLoader(
     train_dataset,

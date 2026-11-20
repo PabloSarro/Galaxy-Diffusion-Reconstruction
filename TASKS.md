@@ -155,7 +155,7 @@
     - Caveat: none of these are the fair decoder-vs-baseline numbers on unseen data: the Models 1–3 checkpoints were trained on the old random split. Fair decoder numbers come from 3.2.
     - Commits: `6034c7f` (classifier), plus the scripts (`src/baselines.py`, `src/splits.py`, `src/eval_split.py`, `src/classify_split.py`, `src/physics_metrics.py`).
 
-- `[-]` **3.2 Retrain the direct U-Net as baseline B1**
+- `[~]` **3.2 Retrain the direct U-Net as baseline B1**
   - Goal: the current structure, retrained under 3.1, as the number to beat.
   - Why: split and code changed; all reported claims are single-seed.
   - Steps:
@@ -164,7 +164,11 @@
     - Save B1 golden output; back up weights (D8).
   - Effort: 3 h / 34 GPU-h.
   - Success: B1 table with spread; states whether "suite collapse" survives the fair protocol.
-  - Outcome (date):
+  - Outcome (2026-11-20, running): 4 runs, grouped split v1, s=0.7, MSE, 200 epochs, `train_decoder.py --noise-std --seed --split-file`:
+    - σ=0.22 seeds 1, 2 (job 3262131 cs-302, 3262132 math-454) -> `results/B1/sigma0.22/seed{1,2}/`
+    - σ=0 seeds 1, 2 (jobs 3262133, 3262134, env540) -> `results/B1/sigma0/seed{1,2}/`
+    - Logs: `results/B1/logs/`. Each run ~7 h GPU; resume with the same command if the 12 h limit hits (`train_B1.job`, `last.pt`).
+    - Check later: both seeds per config; mean, spread and seed rule; then B1 table on VALID (test unread); golden output of B1; back up weights (D8).
 - `[-]` **3.3 Post-mortem of the old diffusion runs**
   - Goal: know why each old attempt failed, with evidence.
   - Why: old Algo 2 (ρ 0.7404) was worse than its own input (0.7718); latent DDPM gave ρ ≈ 0.03.
