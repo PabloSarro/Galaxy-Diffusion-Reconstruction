@@ -127,7 +127,7 @@
 
 
 ### 3 Cold diffusion as the main approach
-- `[~]` **3.1 Fair evaluation protocol**
+- `[X]` **3.1 Fair evaluation protocol**
   - Goal: one evaluation that every model, kNN included, goes through.
   - Why: the report's Table 7 compares U-Nets at σ=0.22 with kNN at σ=0.005; all values are at chance.
   - Steps:
@@ -146,12 +146,15 @@
     - Config file + seed argument per run; unit tests for all of the above.
   - Effort: 10 h / 2 GPU-h.
   - Success: existing checkpoints re-scored; a table with matched-σ kNN and chance levels.
-  - Outcome (2026-11-18, partial): split built and saved: `results/splits/split_v1.json` (seed 0, 70/15/15 by group, class fractions exact: train 12600, valid 2700, test 2700). Group keys: BAHAMAS `clusterID` (same cluster across σ files), DARKSKIES (file, `ID_minpot`); `ID` is not a halo key (one group of 768 maps). Code: `src/splits.py`, `src/eval_split.py`, `src/dataset.py` (`groups`), `eval_pixel.py --split-file`; tests `tests/test_splits.py`, `tests/test_eval_split.py`.
-    - Re-score of Models 1–3 on the new VALID split (job 3257710, `results/split_v1/Model N/pixel_valid.json`): M1 ρ 0.951 (MSE 2.2e-4), M2 ρ 0.980 (2.9e-5), M3 ρ 0.877 (9.6e-4). NOT a fair number: 80% of new valid samples (223/225 groups) were in the old random train split. Use only as a leakage measurement; fair numbers come after 3.2.
-    - Test split still unread.
-    - Baselines on VALID (fair, no training): `src/baselines.py`, job 3261820 (env540, 6 min), `results/split_v1/baselines/baselines_valid.json`. Clipped to [0,1] like the decoder's sigmoid output (unclipped kept in JSON). Matched-σ, clipped, overall (ρ / MSE): σ=0.005 raw 0.474 / 5.3e-3, kNN 0.829 / 6.8e-3; σ=0.22 raw 0.055 / 4.6e-2, kNN 0.095 / 1.4e-1. kNN per class at σ=0.22: 0.087–0.100 (all ≈ chance-level ρ).     - kNN MSE puzzle EXPLAINED (`results/split_v1/diagnostics/knn_vs_raw_sigma0.005.txt`, 300 valid maps): the mean is dominated by maps with tiny normalisation range (b−a ≈ 0.0002–0.001). There, the known pixels are huge outliers; kNN copies them into the removed pixels, raw keeps them only where they are. Median MSE: kNN 7.1e-4, raw 3.0e-3 (kNN better on typical maps). Report medians alongside means from now on.
-    - MSE=62 check (`diagnostics/mse62_phys.txt`, 512 valid maps, σ=0.22): physical-unit error correlates with b−a (r=0.83), not with the |g|>1 fraction (r=0.10); top-10 errors have almost no |g|>1 pixels. So the report's |g|>1 explanation is NOT supported; the normalisation range is the driver. The number 62 itself does not reproduce on this split (normalised unclipped raw MSE at σ=0.22 is 208; physical mean 0.03). The report's footnote should be corrected.
-    - Remaining in 3.1: classification on the new split (job 3261832, `src/classify_split_3_1.job`); χ and Kaiser–Squires metrics; classifier provenance (from the same job: clean train vs valid).
+  - Outcome (2026-11-20): done on VALID only (test split still unread).
+    - Split: `results/splits/split_v1.json` (70/15/15 grouped, exact class fractions).
+    - Classifier provenance: clean train maps 0.620 (n=200) vs clean valid 0.626: no sign it trained on our maps. Sparsity: noise-free maps masked at s=0.25 drop to 0.24 (0.85: 0.20): the classifier cannot read sparse inputs, so its scores on degraded inputs are a floor, not a reconstruction-quality measure (`results/split_v1/classification/`).
+    - Classification (valid, matched σ, acc / bal-acc / macro-F1; chance = majority 0.20, balanced chance 1/7 = 0.14): clean 0.626 / 0.607 / 0.600; M1 σ=0.005: raw 0.198, kNN 0.220, U-Net 0.373; M2 σ=0: kNN 0.523, U-Net 0.574; M3 σ=0.22: raw 0.20, kNN 0.20, U-Net 0.090 (bal-acc 0.19). At σ=0.22 the classifier collapses to one class for raw and kNN (chance level).
+    - Physics metrics (median; `results/split_v1/physics/physics_valid.json`): ρ in physical / χ / κ (Kaiser–Squires): M1 σ=0.005: raw 0.52/0.52/0.64, kNN 0.91/0.92/0.94, U-Net 0.99/0.99/0.99. M3 σ=0.22: raw 0.06, kNN 0.10, U-Net 0.92 (χ). Power-spectrum error (relative, median): U-Net 0.15–0.80, kNN 0.34–0.59 (M3 kNN and raw are 400+: outlier-driven).
+    - Diagnostics: kNN MSE puzzle explained (tiny b−a maps; medians). MSE=62 not reproduced on this split; its cause is the normalisation range, not |g|>1 (report footnote needs a correction).
+    - Caveat: none of these are the fair decoder-vs-baseline numbers on unseen data: the Models 1–3 checkpoints were trained on the old random split. Fair decoder numbers come from 3.2.
+    - Commits: `6034c7f` (classifier), plus the scripts (`src/baselines.py`, `src/splits.py`, `src/eval_split.py`, `src/classify_split.py`, `src/physics_metrics.py`).
+
 - `[-]` **3.2 Retrain the direct U-Net as baseline B1**
   - Goal: the current structure, retrained under 3.1, as the number to beat.
   - Why: split and code changed; all reported claims are single-seed.
@@ -278,8 +281,9 @@
 | 2026-11-16 | `results/repro_1.1` | valid, seed 42 | reproduction of Models 1–3, no change | M2/M3 classification identical; pixel ρ M1 0.9252, M2 0.9485, M3 0.8453; M1 classification differs from Table 6 (0.384 vs 0.343) | task 1.1 |
 | 2026-11-17 | `results/smoke_2.2/run` | train 1 ep + resume to 2 | `train_decoder.py` checkpointed (2.2), no change to the model | 18 tests pass; resume works on GPU (after fix) | task 2.2 |
 | 2026-11-17 | `tests/golden/golden.json` | valid (8 samples), seed 0 | none (golden + unit tests) | pytest 14 passed; pred MSE 6.83e-4 | task 1.2 |
+| 2026-11-20 | `results/split_v1` | valid (grouped split v1) | matched-σ baselines, classifier, physics metrics; Models 1–3 (old-split checkpoints) | see 3.1 Outcome (ρ/κ/χ, acc); M1 U-Net ρ 0.99 vs kNN 0.91 at σ=0.005 | task 3.1 |
 
 ## Next session: start here
-- First bullet: **3.1 remaining steps** (split done; see its Outcome). Then 3.2 (retrain B1 on the new train split).
+- First bullet: **3.2 Retrain the direct U-Net as baseline B1** (3.1 closed; its outcome lists the fair baselines).
 - Branch: `improvements-nov2026`.
 - How to start: see `CLAUDE.md` ("Starting a session"). Nothing blocks 1.1.

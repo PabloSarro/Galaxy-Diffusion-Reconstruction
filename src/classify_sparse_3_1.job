@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH --job-name=ClsSparse
+#SBATCH --time=01:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --account=cs-302
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../results/split_v1/classification/sparse_job_%j.log
+#SBATCH --error=../results/split_v1/classification/sparse_job_%j.err
+
+# Task 3.1 provenance: classifier accuracy on noise-free maps at several sparsities (VALID split).
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+$PY -u classify_split.py --cases sparse:0.25 sparse:0.5 sparse:0.7 sparse:0.85 \
+  --output ../results/split_v1/classification/classification_sparsity_valid.json
+echo "done $(date)"

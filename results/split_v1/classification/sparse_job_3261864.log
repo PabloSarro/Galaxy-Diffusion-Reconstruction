@@ -1,0 +1,11 @@
+device cuda
+Prediction time: 3.235e+01 s
+sparse:0.25 {"acc": 0.24, "bal_acc": 0.17407407407407405, "f1_macro": 0.10911987124178256, "chance_acc": 0.2, "n": 2700}
+Prediction time: 3.124e+01 s
+sparse:0.5 {"acc": 0.23444444444444446, "bal_acc": 0.16798941798941797, "f1_macro": 0.10273825455868958, "chance_acc": 0.2, "n": 2700}
+Prediction time: 3.142e+01 s
+sparse:0.7 {"acc": 0.21444444444444444, "bal_acc": 0.15317460317460316, "f1_macro": 0.07698100654936743, "chance_acc": 0.2, "n": 2700}
+Prediction time: 3.128e+01 s
+sparse:0.85 {"acc": 0.2025925925925926, "bal_acc": 0.14470899470899473, "f1_macro": 0.06316714109531203, "chance_acc": 0.2, "n": 2700}
+saved ../results/split_v1/classification/classification_sparsity_valid.json
+done ven 20 nov 2026 09:35:40 CET

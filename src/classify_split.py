@@ -5,6 +5,7 @@
 Cases (--cases):
   clean_train    200 random TRAIN-split maps, noise-free (provenance: does the classifier know them?)
   clean_valid    all VALID maps, noise-free (ceiling)
+  sparse:S       noise-free maps masked at sparsity S
   noisy:SIG      degraded input at sigma SIG
   knn:SIG        kNN reconstruction at sigma SIG
   unet:N:SIG     decoder of Model N (results/Reconstruction/Model N) applied to the degraded input at sigma SIG
@@ -103,6 +104,17 @@ def main():
             x0 = torch.cat(xs); norms = torch.cat(ns)
             shears = to_physical_chi(x0, norms)
             true, pred = predict(arch, shears, targets_all[idx])
+        elif kind == "sparse":
+            # Noise-free maps degraded only by masking at sparsity S (tests tolerance to sparsity).
+            sp = float(parts[1])
+            torch.manual_seed(0)
+            deg = Degradation(sparsity=sp, noise_std=0.0, device="cpu")
+            xs, ns, gs = [], [], []
+            for x0, norms, ng in DataLoader(Subset(ds, valid), batch_size=64, shuffle=False):
+                xT, _ = deg.degrade(x0, norms, ng)
+                xs.append(x0); ns.append(norms); gs.append(xT)
+            shears = to_physical_chi(torch.cat(gs), torch.cat(ns))
+            true, pred = predict(arch, shears, targets_all[valid])
         else:
             sigma = float(parts[-1])
             torch.manual_seed(0)
