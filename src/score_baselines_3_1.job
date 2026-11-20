@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --job-name=Base31
+#SBATCH --time=04:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --account=env540
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../results/split_v1/baselines_job_%j.log
+#SBATCH --error=../results/split_v1/baselines_job_%j.err
+
+# Task 3.1: kNN and raw-degraded baselines per sigma on the VALID split (no test read).
+# kNN is CPU work (scipy); the GPU is requested only because the partition is gpu.
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+echo "host=$(hostname) date=$(date)"
+$PY -u score_baselines.py --split-file ../results/splits/split_v1.json --split valid \
+    --output ../results/split_v1/baselines/baselines_valid.json
+echo "done $(date)"

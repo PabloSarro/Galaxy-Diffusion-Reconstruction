@@ -149,7 +149,8 @@
   - Outcome (2026-11-18, partial): split built and saved: `results/splits/split_v1.json` (seed 0, 70/15/15 by group, class fractions exact: train 12600, valid 2700, test 2700). Group keys: BAHAMAS `clusterID` (same cluster across σ files), DARKSKIES (file, `ID_minpot`); `ID` is not a halo key (one group of 768 maps). Code: `src/splits.py`, `src/eval_split.py`, `src/dataset.py` (`groups`), `eval_pixel.py --split-file`; tests `tests/test_splits.py`, `tests/test_eval_split.py`.
     - Re-score of Models 1–3 on the new VALID split (job 3257710, `results/split_v1/Model N/pixel_valid.json`): M1 ρ 0.951 (MSE 2.2e-4), M2 ρ 0.980 (2.9e-5), M3 ρ 0.877 (9.6e-4). NOT a fair number: 80% of new valid samples (223/225 groups) were in the old random train split. Use only as a leakage measurement; fair numbers come after 3.2.
     - Test split still unread.
-    - Remaining in 3.1: kNN and raw-degraded at each σ on the new split; classification on the new split; χ and Kaiser–Squires metrics; MSE=62 check; classifier provenance (3.1 list).
+    - Baselines on VALID (fair, no training): `src/baselines.py`, job 3261820 (env540, 6 min), `results/split_v1/baselines/baselines_valid.json`. Clipped to [0,1] like the decoder's sigmoid output (unclipped kept in JSON). Matched-σ, clipped, overall (ρ / MSE): σ=0.005 raw 0.474 / 5.3e-3, kNN 0.829 / 6.8e-3; σ=0.22 raw 0.055 / 4.6e-2, kNN 0.095 / 1.4e-1. kNN per class at σ=0.22: 0.087–0.100 (all ≈ chance-level ρ). Note: kNN has higher ρ but higher MSE than raw at σ=0.005; not yet explained.
+    - Remaining in 3.1: classification on the new split; χ and Kaiser–Squires metrics; MSE=62 check; classifier provenance.
 - `[-]` **3.2 Retrain the direct U-Net as baseline B1**
   - Goal: the current structure, retrained under 3.1, as the number to beat.
   - Why: split and code changed; all reported claims are single-seed.

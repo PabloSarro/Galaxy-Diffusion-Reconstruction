@@ -1,0 +1,13 @@
+host=i06 date=mer 18 nov 2026 19:30:28 CET
+sigma 0.005: raw rho 0.4746 | knn rho 0.8290 mse 3.64e-01
+sigma 0.0075: raw rho 0.4512 | knn rho 0.7874 mse 8.18e-01
+sigma 0.01: raw rho 0.4288 | knn rho 0.7475 mse 1.45e+00
+sigma 0.025: raw rho 0.3182 | knn rho 0.5523 mse 9.08e+00
+sigma 0.05: raw rho 0.2098 | knn rho 0.3629 mse 3.63e+01
+sigma 0.075: raw rho 0.1527 | knn rho 0.2638 mse 8.17e+01
+sigma 0.1: raw rho 0.1190 | knn rho 0.2055 mse 1.45e+02
+sigma 0.15: raw rho 0.0819 | knn rho 0.1414 mse 3.27e+02
+sigma 0.2: raw rho 0.0622 | knn rho 0.1074 mse 5.81e+02
+sigma 0.22: raw rho 0.0567 | knn rho 0.0979 mse 7.03e+02
+sigma 0.3: raw rho 0.0419 | knn rho 0.0723 mse 1.31e+03
+done mer 18 nov 2026 19:36:38 CET
