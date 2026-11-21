@@ -1,0 +1,11 @@
+host=ixl01 date=sam 21 nov 2026 20:38:36 CET
+Prediction time: 3.201e+01 s
+sigma0.22 1 {'acc': 0.0856, 'bal_acc': 0.1812, 'f1_macro': 0.0629, 'chance_acc': 0.2, 'n': 2700}
+Prediction time: 3.189e+01 s
+sigma0.22 2 {'acc': 0.0859, 'bal_acc': 0.1778, 'f1_macro': 0.0651, 'chance_acc': 0.2, 'n': 2700}
+Prediction time: 3.380e+01 s
+sigma0 1 {'acc': 0.5763, 'bal_acc': 0.5677, 'f1_macro': 0.5448, 'chance_acc': 0.2, 'n': 2700}
+Prediction time: 3.341e+01 s
+sigma0 2 {'acc': 0.5767, 'bal_acc': 0.5722, 'f1_macro': 0.5485, 'chance_acc': 0.2, 'n': 2700}
+saved
+done sam 21 nov 2026 20:41:44 CET

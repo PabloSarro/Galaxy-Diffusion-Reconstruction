@@ -159,7 +159,7 @@
     - kNN breakdown (40 valid maps, σ=0.005): median removed-pixel MSE raw 0.0058, kNN 0.0011; mean raw 0.0069, kNN 0.023. Matches the committed diagnostic.
     - Commits: `6034c7f` (classifier), plus the scripts (`src/baselines.py`, `src/splits.py`, `src/eval_split.py`, `src/classify_split.py`, `src/physics_metrics.py`).
 
-- `[~]` **3.2 Retrain the direct U-Net as baseline B1**
+- `[X]` **3.2 Retrain the direct U-Net as baseline B1**
   - Goal: the current structure, retrained under 3.1, as the number to beat.
   - Why: split and code changed; all reported claims are single-seed.
   - Steps:
@@ -169,15 +169,14 @@
     - Save B1 golden output; back up weights (D8).
   - Effort: 3 h / 34 GPU-h.
   - Success: B1 table with spread; states whether "suite collapse" survives the fair protocol.
-  - Outcome (2026-11-20, running): 4 runs, grouped split v1, s=0.7, MSE, 200 epochs, `train_decoder.py --noise-std --seed --split-file`:
-    - σ=0.22 seeds 1, 2 (job 3262131 cs-302, 3262132 math-454) -> `results/B1/sigma0.22/seed{1,2}/`
-    - σ=0 seeds 1, 2 (jobs 3262133, 3262134, env540) -> `results/B1/sigma0/seed{1,2}/`
-    - Logs: `results/B1/logs/`. Each run ~7 h GPU; resume with the same command if the 12 h limit hits (`train_B1.job`, `last.pt`).
-    - Finished 2026-11-21 00:16 (all 4 COMPLETED, 200 epochs, ~6.5 h each). Last-epoch and best VALID (training-log eval, first 20 batches):
-      - σ=0.22: seed1 MSE 1.04e-3 ρ 0.874; seed2 MSE 1.02e-3 ρ 0.873 (old split, Model 3: 7.0e-4 / 0.847, leaky).
-      - σ=0: seed1 MSE 3.3e-5 ρ 0.972; seed2 MSE 3.4e-5 ρ 0.971 (old split, Model 2: 2.3e-5 / 0.949).
-      - Best checkpoints: `results/B1/sigma{0.22,0}/seed{1,2}/MSE/training/decoder_best.pt`.
-    - Still open in 3.2: per-class full-valid scoring of both seeds (`eval_split.py` / `eval_pixel.py --split-file`), the mean/spread/seed-rule table, B1 golden output, weight backup (D8). The lower numbers than the old split are consistent with the leak measured in 3.1.
+  - Outcome (2026-11-21): done. Full VALID split, per class, both seeds (`src/b1_closing.py`, job 3262364, `results/B1/closing/b1_valid_full.json`):
+    - σ=0.22: seed1 MSE 9.70e-4 ρ 0.876; seed2 MSE 9.70e-4 ρ 0.876. Mean ρ 0.876, spread (max−min) 0.0005. Old Model 3 (leaky split): 7.0e-4 / 0.847.
+    - σ=0: seed1 MSE 3.0e-5 ρ 0.969; seed2 MSE 3.0e-5 ρ 0.967. Mean ρ 0.968, spread 0.0019. Old Model 2: 2.3e-5 / 0.949.
+    - Seed-selection rule: best VALID epoch of each run (`decoder_best.pt`); the two seeds are reported, none selected.
+    - Classifier on B1 outputs, matched σ, VALID (`src/b1_classify.py`, job 3262848, `results/B1/closing/classifier_b1_valid.json`): σ=0.22 acc 0.086 / 0.086 (bal-acc 0.18), below the constant-predictor rate 0.200. σ=0 acc 0.577 / 0.576 (ceiling 0.626). Suite collapse survives the fair protocol.
+    - Golden: `results/B1/closing/golden_B1_sigma0.22_seed1.json` (pred MSE 6.86e-4, mean 0.545), same inputs as `tests/golden`. Not yet part of the pytest golden check.
+    - Backup (copy, nothing deleted): `/home/sarro/backups/B1/{sigma0.22,sigma0}/seed{1,2}/decoder_best.pt`, outside the repo. Confirm this location meets D8.
+    - Test split untouched.
 - `[-]` **3.3 Post-mortem of the old diffusion runs**
   - Goal: know why each old attempt failed, with evidence.
   - Why: old Algo 2 (ρ 0.7404) was worse than its own input (0.7718); latent DDPM gave ρ ≈ 0.03.
@@ -295,6 +294,7 @@
 | 2026-11-17 | `results/smoke_2.2/run` | train 1 ep + resume to 2 | `train_decoder.py` checkpointed (2.2), no change to the model | 18 tests pass; resume works on GPU (after fix) | task 2.2 |
 | 2026-11-17 | `tests/golden/golden.json` | valid (8 samples), seed 0 | none (golden + unit tests) | pytest 14 passed; pred MSE 6.83e-4 | task 1.2 |
 | 2026-11-20 | `results/split_v1` | valid (grouped split v1) | matched-σ baselines, classifier, physics metrics; Models 1–3 (old-split checkpoints) | see 3.1 Outcome (ρ/κ/χ, acc); M1 U-Net ρ 0.99 vs kNN 0.91 at σ=0.005 | task 3.1 |
+| 2026-11-21 | `results/B1/closing` | valid (grouped split v1), per class | B1 retrain, σ=0.22 and σ=0, seeds 1–2 (200 ep) | ρ σ=0.22 0.876 (spread 0.0005); σ=0 0.968 (spread 0.0019); classifier σ=0.22 acc 0.086 | task 3.2 |
 | 2026-11-21 | `results/split_v1/classify_rerun`, `results/split_v1/classification/classification_sparsity_sigma_valid.json` | valid (grouped split v1) | rerun of matched-σ classifier + σ×s grid on raw inputs | matched-σ acc within 0.013 of committed run; σ=0.22 all at chance | task 3.1 merge |
 
 ## Next session: start here

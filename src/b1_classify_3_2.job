@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH --job-name=B1Cls
+#SBATCH --time=01:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --account=cs-302
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../results/B1/closing/b1cls_job_%j.log
+#SBATCH --error=../results/B1/closing/b1cls_job_%j.err
+
+# Task 3.2 success check: classifier on B1 outputs, valid split, both seeds. Run from src/.
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+echo "host=$(hostname) date=$(date)"
+$PY -u b1_classify.py
+echo "done $(date)"
