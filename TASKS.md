@@ -168,7 +168,11 @@
     - σ=0.22 seeds 1, 2 (job 3262131 cs-302, 3262132 math-454) -> `results/B1/sigma0.22/seed{1,2}/`
     - σ=0 seeds 1, 2 (jobs 3262133, 3262134, env540) -> `results/B1/sigma0/seed{1,2}/`
     - Logs: `results/B1/logs/`. Each run ~7 h GPU; resume with the same command if the 12 h limit hits (`train_B1.job`, `last.pt`).
-    - Check later: both seeds per config; mean, spread and seed rule; then B1 table on VALID (test unread); golden output of B1; back up weights (D8).
+    - Finished 2026-11-21 00:16 (all 4 COMPLETED, 200 epochs, ~6.5 h each). Last-epoch and best VALID (training-log eval, first 20 batches):
+      - σ=0.22: seed1 MSE 1.04e-3 ρ 0.874; seed2 MSE 1.02e-3 ρ 0.873 (old split, Model 3: 7.0e-4 / 0.847, leaky).
+      - σ=0: seed1 MSE 3.3e-5 ρ 0.972; seed2 MSE 3.4e-5 ρ 0.971 (old split, Model 2: 2.3e-5 / 0.949).
+      - Best checkpoints: `results/B1/sigma{0.22,0}/seed{1,2}/MSE/training/decoder_best.pt`.
+    - Still open in 3.2: per-class full-valid scoring of both seeds (`eval_split.py` / `eval_pixel.py --split-file`), the mean/spread/seed-rule table, B1 golden output, weight backup (D8). The lower numbers than the old split are consistent with the leak measured in 3.1.
 - `[-]` **3.3 Post-mortem of the old diffusion runs**
   - Goal: know why each old attempt failed, with evidence.
   - Why: old Algo 2 (ρ 0.7404) was worse than its own input (0.7718); latent DDPM gave ρ ≈ 0.03.
@@ -288,6 +292,6 @@
 | 2026-11-20 | `results/split_v1` | valid (grouped split v1) | matched-σ baselines, classifier, physics metrics; Models 1–3 (old-split checkpoints) | see 3.1 Outcome (ρ/κ/χ, acc); M1 U-Net ρ 0.99 vs kNN 0.91 at σ=0.005 | task 3.1 |
 
 ## Next session: start here
-- First bullet: **3.2 Retrain the direct U-Net as baseline B1** (3.1 closed; its outcome lists the fair baselines).
+- First bullet: **3.2 Retrain the direct U-Net as baseline B1** (4 runs finished 2026-11-21; remaining: full-valid scoring, mean/spread table, golden, backup).
 - Branch: `improvements-nov2026`.
 - How to start: see `CLAUDE.md` ("Starting a session"). Nothing blocks 1.1.
