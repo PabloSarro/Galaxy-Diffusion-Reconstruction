@@ -1,0 +1,24 @@
+host=i56 date=sam 21 nov 2026 15:49:05 CET
+Tesla V100-PCIE-32GB
+Prediction time: 1.957e+01 s
+clean {'acc': 0.6259, 'bal_acc': 0.6074, 'macro_f1': 0.5997, 'chance_majority': np.float64(0.2), 'chance_uniform': 0.1429, 'sigma': 0.0, 'chi_mse': 0.0, 'kappa_mse': 0.0}
+Prediction time: 1.734e+01 s
+raw@0.005 {'acc': 0.2004, 'bal_acc': 0.1431, 'macro_f1': 0.0549, 'chance_majority': np.float64(0.2), 'chance_uniform': 0.1429, 'sigma': 0.005, 'chi_mse': 0.0024, 'kappa_mse': 0.0219}
+Prediction time: 1.732e+01 s
+knn@0.005 {'acc': 0.2211, 'bal_acc': 0.2421, 'macro_f1': 0.183, 'chance_majority': np.float64(0.2), 'chance_uniform': 0.1429, 'sigma': 0.005, 'chi_mse': 0.0004, 'kappa_mse': 0.0209}
+Prediction time: 1.723e+01 s
+M1@0.005 {'acc': 0.3844, 'bal_acc': 0.4212, 'macro_f1': 0.3543, 'chance_majority': np.float64(0.2), 'chance_uniform': 0.1429, 'sigma': 0.005, 'chi_mse': 0.0036, 'kappa_mse': 0.0245}
+Prediction time: 1.782e+01 s
+M2@0.0 {'acc': 0.587, 'bal_acc': 0.578, 'macro_f1': 0.5559, 'chance_majority': np.float64(0.2), 'chance_uniform': 0.1429, 'sigma': 0.0, 'chi_mse': 0.0013, 'kappa_mse': 0.0187}
+Prediction time: 1.777e+01 s
+raw@0.22 {'acc': 0.2, 'bal_acc': 0.1429, 'macro_f1': 0.0476, 'chance_majority': np.float64(0.2), 'chance_uniform': 0.1429, 'sigma': 0.22, 'chi_mse': 0.0443, 'kappa_mse': 0.0359}
+Prediction time: 1.782e+01 s
+knn@0.22 {'acc': 0.2, 'bal_acc': 0.1429, 'macro_f1': 0.0476, 'chance_majority': np.float64(0.2), 'chance_uniform': 0.1429, 'sigma': 0.22, 'chi_mse': 0.14, 'kappa_mse': 0.0676}
+Prediction time: 1.669e+01 s
+M3@0.22 {'acc': 0.0904, 'bal_acc': 0.191, 'macro_f1': 0.0663, 'chance_majority': np.float64(0.2), 'chance_uniform': 0.1429, 'sigma': 0.22, 'chi_mse': 0.0036, 'kappa_mse': 0.0231}
+Prediction time: 8.277e+01 s
+provenance train {'acc': 0.6278571428571429, 'macro_f1': 0.6001901904502522, 'n': 12600}
+Prediction time: 1.829e+01 s
+provenance valid {'acc': 0.6259259259259259, 'macro_f1': 0.5996709448676996, 'n': 2700}
+saved ../results/split_v1/classify/classify_valid.json
+done sam 21 nov 2026 16:01:54 CET

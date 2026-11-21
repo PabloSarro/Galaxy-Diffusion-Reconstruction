@@ -9,7 +9,7 @@
 ## Status
 - `[X]` 1 Reproduce + golden · exit: logs matched, golden test passes · result: –
 - `[X]` 2 Cleanup + resumable training (2.1–2.2) · exit: approved list applied, resume test passes, tests + golden pass · result: –
-- `[-]` 3A Fair protocol + baseline B1 (3.1–3.2) · exit: 2 seeds, matched-σ kNN · result: –
+- `[~]` 3A Fair protocol + baseline B1 (3.1–3.2) · exit: 2 seeds, matched-σ kNN · result: –
 - `[-]` 3B Diffusion post-mortem (3.3) · exit: each failure cause confirmed or rejected · result: –
 - `[-]` 3C Representation fixes (3.4) · exit: each change judged vs seed spread · result: –
 - `[-]` 3D Cold diffusion v2 (3.5–3.8) · exit: beats B1 and kNN beyond spread · result: –
@@ -153,6 +153,10 @@
     - Physics metrics (median; `results/split_v1/physics/physics_valid.json`): ρ in physical / χ / κ (Kaiser–Squires): M1 σ=0.005: raw 0.52/0.52/0.64, kNN 0.91/0.92/0.94, U-Net 0.99/0.99/0.99. M3 σ=0.22: raw 0.06, kNN 0.10, U-Net 0.92 (χ). Power-spectrum error (relative, median): U-Net 0.15–0.80, kNN 0.34–0.59 (M3 kNN and raw are 400+: outlier-driven).
     - Diagnostics: kNN MSE puzzle explained (tiny b−a maps; medians). MSE=62 not reproduced on this split; its cause is the normalisation range, not |g|>1 (report footnote needs a correction).
     - Caveat: none of these are the fair decoder-vs-baseline numbers on unseen data: the Models 1–3 checkpoints were trained on the old random split. Fair decoder numbers come from 3.2.
+    - Merged second run (Nov 21, same split; `results/split_v1/classify_rerun/`, one degradation draw each): matched-σ acc, committed vs rerun: raw@0.005 0.198 vs 0.200; kNN@0.005 0.220 vs 0.221; M1 0.373 vs 0.384; M2 σ=0 0.574 vs 0.587; M3 0.090 vs 0.090. Differences ≤0.013 are the draw-to-draw size; no seed spread yet.
+    - σ × s grid on raw degraded inputs, no decoder (`results/split_v1/classification/classification_sparsity_sigma_valid.json`, job 3262847): σ=0 rows match the committed sparsity file. At σ=0.005 acc 0.200–0.222; at σ=0.22 acc 0.200 for all s (constant predictor).
+    - MSE=62 check on normalised-space MSE (rerun, 90 valid maps, σ=0.22): corr(MSE, 1/(b−a)²) = 1.000; corr(MSE, frac |g|>1) = −0.03. Agrees with the committed physical-units check (corr with b−a 0.83, with frac |g|>1 0.10). Both point to the normalisation range.
+    - kNN breakdown (40 valid maps, σ=0.005): median removed-pixel MSE raw 0.0058, kNN 0.0011; mean raw 0.0069, kNN 0.023. Matches the committed diagnostic.
     - Commits: `6034c7f` (classifier), plus the scripts (`src/baselines.py`, `src/splits.py`, `src/eval_split.py`, `src/classify_split.py`, `src/physics_metrics.py`).
 
 - `[~]` **3.2 Retrain the direct U-Net as baseline B1**
@@ -290,6 +294,7 @@
 | 2026-11-17 | `results/smoke_2.2/run` | train 1 ep + resume to 2 | `train_decoder.py` checkpointed (2.2), no change to the model | 18 tests pass; resume works on GPU (after fix) | task 2.2 |
 | 2026-11-17 | `tests/golden/golden.json` | valid (8 samples), seed 0 | none (golden + unit tests) | pytest 14 passed; pred MSE 6.83e-4 | task 1.2 |
 | 2026-11-20 | `results/split_v1` | valid (grouped split v1) | matched-σ baselines, classifier, physics metrics; Models 1–3 (old-split checkpoints) | see 3.1 Outcome (ρ/κ/χ, acc); M1 U-Net ρ 0.99 vs kNN 0.91 at σ=0.005 | task 3.1 |
+| 2026-11-21 | `results/split_v1/classify_rerun`, `results/split_v1/classification/classification_sparsity_sigma_valid.json` | valid (grouped split v1) | rerun of matched-σ classifier + σ×s grid on raw inputs | matched-σ acc within 0.013 of committed run; σ=0.22 all at chance | task 3.1 merge |
 
 ## Next session: start here
 - First bullet: **3.2 Retrain the direct U-Net as baseline B1** (4 runs finished 2026-11-21; remaining: full-valid scoring, mean/spread table, golden, backup).

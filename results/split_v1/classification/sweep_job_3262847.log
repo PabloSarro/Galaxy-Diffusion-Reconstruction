@@ -1,0 +1,21 @@
+host=ixl01 date=sam 21 nov 2026 20:22:17 CET
+Prediction time: 3.450e+01 s
+s=0.25 sigma=0.0: acc 0.240 F1 0.110 chance 0.200
+Prediction time: 3.366e+01 s
+s=0.25 sigma=0.005: acc 0.222 F1 0.093 chance 0.200
+Prediction time: 3.386e+01 s
+s=0.25 sigma=0.22: acc 0.200 F1 0.048 chance 0.200
+Prediction time: 3.347e+01 s
+s=0.5 sigma=0.0: acc 0.233 F1 0.102 chance 0.200
+Prediction time: 3.361e+01 s
+s=0.5 sigma=0.005: acc 0.210 F1 0.071 chance 0.200
+Prediction time: 3.379e+01 s
+s=0.5 sigma=0.22: acc 0.200 F1 0.048 chance 0.200
+Prediction time: 3.341e+01 s
+s=0.7 sigma=0.0: acc 0.216 F1 0.077 chance 0.200
+Prediction time: 3.325e+01 s
+s=0.7 sigma=0.005: acc 0.200 F1 0.053 chance 0.200
+Prediction time: 3.336e+01 s
+s=0.7 sigma=0.22: acc 0.200 F1 0.048 chance 0.200
+saved
+done sam 21 nov 2026 20:28:19 CET

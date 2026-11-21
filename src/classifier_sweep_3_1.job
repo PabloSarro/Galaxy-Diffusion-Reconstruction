@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH --job-name=Sweep31
+#SBATCH --time=01:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --account=cs-302
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../results/split_v1/sweep_job_%j.log
+#SBATCH --error=../results/split_v1/sweep_job_%j.err
+
+# Task 3.1: classifier vs sparsity and sigma on the valid split (run from src/).
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+echo "host=$(hostname) date=$(date)"
+$PY -u classifier_sweep_3_1.py
+echo "done $(date)"
