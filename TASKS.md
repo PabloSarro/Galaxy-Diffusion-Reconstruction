@@ -165,6 +165,7 @@
   - Steps:
     - σ=0.22 and σ=0, s=0.7, 2 seeds each, unchanged architecture and loss.
     - Report mean, spread, and the seed-selection rule.
+    - Moved here from 3.1 (approved 2026-11-21): 3.1 is closed without the 2-seed check, which needs retraining.
     - Save B1 golden output; back up weights (D8).
   - Effort: 3 h / 34 GPU-h.
   - Success: B1 table with spread; states whether "suite collapse" survives the fair protocol.
