@@ -19,7 +19,7 @@ Code: `archive/diffusion_7b9b37c/` (local; recoverable from commits `7b9b37c`, `
 
 - The report's claim that Algorithm 2 is worse than its input does not reproduce on data-full: matched Algorithm 2 is the best of the three.
 - The old sampler's default draws a fresh mask (`fixed_mask_rand=None`), so the old evaluations were probably run mismatched. That matches the largest effect here.
-- **Not tested:** "network never sees the mask". The decoder takes only `(x_t, t)`. Testing it needs a retrain with the mask as input, which is not in this post-mortem.
+- **Network never sees the mask: confirmed for direct prediction, not the cause of the sampler failure.** Retraining with the observed-pixel mask as a 3rd input (2 seeds, same recipe as the random-t baseline) raises direct ρ from 0.953/0.956 to 0.972/0.976 and cuts MSE by 3–4×. With the realistic sampler (fresh randomness each step), Algorithm 2 stays at ρ ≈ 0.75–0.76 with or without the mask, so the iterative sampler is the bottleneck, not the input.
 
 ## Latent DDPM (`results/postmortem_3_3/latent_causes_valid.json`)
 

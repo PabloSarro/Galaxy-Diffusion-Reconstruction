@@ -1,0 +1,19 @@
+batch 0
+batch 1
+{
+ "ckpt": "../../results/postmortem_3_3/time/random_s2/best.pt",
+ "maskin": false,
+ "n": 64,
+ "direct": {
+  "mse": 0.0012421465147135068,
+  "rho": 0.9561647579291188
+ },
+ "alg2_resample": {
+  "mse": 0.07288476019492542,
+  "rho": 0.7503295459222419
+ },
+ "alg2_matched_oracle": {
+  "mse": 0.00010250673177653966,
+  "rho": 0.9764734025480414
+ }
+}

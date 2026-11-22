@@ -1,0 +1,17 @@
+{
+  "ckpt": "../../results/postmortem_3_3/maskin/s2/best.pt",
+  "maskin": true,
+  "n": 64,
+  "direct": {
+    "mse": 0.00026255033591006795,
+    "rho": 0.9755108619261008
+  },
+  "alg2_resample": {
+    "mse": 0.07251069473015229,
+    "rho": 0.7627688244630109
+  },
+  "alg2_matched_oracle": {
+    "mse": 4.198067266194439e-05,
+    "rho": 0.9811747324575671
+  }
+}
