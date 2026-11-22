@@ -12,5 +12,7 @@
 
 # Mask-input ablation (3.3). Submit: sbatch --account=<acc> --job-name=MaskIn_s<seed> --export=ALL,SEED=<seed> maskin_3_3.job
 PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
-OUT=../../results/postmortem_3_3/maskin/s${SEED}
-$PY -u time_comparison_3_3.py --mode random --maskin --seed "$SEED" --epochs 60 --sparsity 0.70 --noise-std 0.005 --out "$OUT"
+NOISE=${NOISE:-0.005}
+ROOT=${ROOT:-../../results/postmortem_3_3/maskin}
+OUT=${ROOT}/s${SEED}
+$PY -u time_comparison_3_3.py --mode random --maskin --seed "$SEED" --epochs 60 --sparsity 0.70 --noise-std "$NOISE" --out "$OUT"

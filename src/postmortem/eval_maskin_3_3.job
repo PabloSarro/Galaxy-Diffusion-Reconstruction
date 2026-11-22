@@ -13,4 +13,6 @@
 # Evaluate one checkpoint: sbatch --export=ALL,CKPT=<best.pt>,MASKIN=<0|1>,OUT=<json> eval_maskin_3_3.job
 PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
 FLAG=""; [ "$MASKIN" = "1" ] && FLAG="--maskin"
-$PY -u eval_maskin_3_3.py --ckpt "$CKPT" $FLAG --out "$OUT"
+NOISE=${NOISE:-0.005}
+NT=""; case "$CKPT" in */none_s*) NT="--no-time";; esac
+$PY -u eval_maskin_3_3.py --ckpt "$CKPT" $FLAG --noise-std "$NOISE" $NT --out "$OUT"

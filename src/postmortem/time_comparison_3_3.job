@@ -13,7 +13,9 @@
 # Task 3.3 / D12 time comparison. Submit with --export=ALL,MODE=<random|fixed|none>,SEED=<1|2>
 # (account given at submit time). Resumes from last.pt if the 12 h limit is hit: resubmit the same command.
 PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
-OUT=../../results/postmortem_3_3/time/${MODE}_s${SEED}
+NOISE=${NOISE:-0.005}
+ROOT=${ROOT:-../../results/postmortem_3_3/time}
+OUT=${ROOT}/${MODE}_s${SEED}
 echo "host=$(hostname) date=$(date) mode=$MODE seed=$SEED out=$OUT"
-$PY -u time_comparison_3_3.py --mode "$MODE" --seed "$SEED" --epochs 60 --sparsity 0.70 --noise-std 0.005 --out "$OUT"
+$PY -u time_comparison_3_3.py --mode "$MODE" --seed "$SEED" --epochs 60 --sparsity 0.70 --noise-std "$NOISE" --out "$OUT"
 echo "done $(date)"

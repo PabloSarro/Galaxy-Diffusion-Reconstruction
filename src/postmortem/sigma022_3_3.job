@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH --job-name=PM33s22
+#SBATCH --time=04:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --account=env540
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../../results/postmortem_3_3/s022_job_%j.log
+#SBATCH --error=../../results/postmortem_3_3/s022_job_%j.err
+
+# Task 3.3 sigma=0.22 follow-up: noise-known sampler, valid, 64 maps. Run from src/postmortem/
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+echo "host=$(hostname) date=$(date)"; nvidia-smi --query-gpu=name --format=csv,noheader
+$PY -u sigma022_3_3.py
+echo "done $(date)"
