@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "encoder": "/home/sarro/SummerProj/src/postmortem/../../archive/old_results/encoder/dim128_0.01_0.25/encoder_best.pt",
+    "sparsity": 0.25,
+    "noise_std": 0.01,
+    "split": "valid (grouped v1)"
+  },
+  "probe_class_acc_valid": 0.32814814814814813,
+  "probe_class_chance_majority": 0.2,
+  "nn_same_class": 0.19814814814814816,
+  "nn_same_group": 0.08074074074074074,
+  "nn_same_group_chance": 0.014079288625416821,
+  "data_std": 0.16391219906515683,
+  "frac_t_snr_below_1_unit_var": 0.741,
+  "frac_t_snr_below_1_data_var": 0.953,
+  "t_snr_eq_1_data_var": 47
+}
