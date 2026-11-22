@@ -102,7 +102,7 @@ def main():
                 "resample": run_algo2(dec, diff, xT, norms, ng, 1000, "resample"),
             }
         for k, p in preds.items():
-            m, r = per_sample_metrics(x0, p)
+            m, r = per_sample_metrics(x0.cpu(), p.cpu())
             acc[k][0].append(m); acc[k][1].append(r)
         print("batch", bi, {k: round(float(np.mean(v[1])), 4) for k, v in acc.items()}, flush=True)
     res["conditions"] = {k: {"mse": float(np.concatenate(v[0]).mean()), "rho": float(np.concatenate(v[1]).mean())}

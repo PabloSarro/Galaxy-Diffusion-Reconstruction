@@ -29,7 +29,7 @@ for bi, (x0, norms, ng) in enumerate(DataLoader(Subset(ds, idx), batch_size=32, 
                           fixed_mask_rand=M, fixed_e1=E1, fixed_e2=E2)
         for K in Ks:
             p = cc.run_algo2(dec, diff, xT, norms, ng, K, "matched", M, E1, E2)
-            m, r = per_sample_metrics(x0, p)
+            m, r = per_sample_metrics(x0.cpu(), p.cpu())
             acc[K][0].append(m); acc[K][1].append(r)
 res = {"meta": {"n": len(idx), "matched randomness": True, "torch": torch.__version__},
        "K": {str(K): {"mse": float(np.concatenate(acc[K][0]).mean()), "rho": float(np.concatenate(acc[K][1]).mean())} for K in Ks}}
