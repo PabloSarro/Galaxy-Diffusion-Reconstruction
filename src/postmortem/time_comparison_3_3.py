@@ -46,6 +46,7 @@ def main():
     ap.add_argument("--sparsity", type=float, default=0.70)
     ap.add_argument("--noise-std", type=float, default=0.005)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--maskin", action="store_true", help="Decoder also gets the observed-pixel mask as a 3rd input channel")
     ap.add_argument("--split-file", default=os.path.join(ROOT, "results", "splits", "split_v1.json"))
     a = ap.parse_args()
     set_seed(a.seed)
@@ -55,7 +56,7 @@ def main():
     g = torch.Generator().manual_seed(a.seed)
     tl = DataLoader(Subset(ds, split["train"]), batch_size=16, shuffle=True, generator=g)
     vl = DataLoader(Subset(ds, split["valid"]), batch_size=16, shuffle=False)
-    dec = OldDecoder(timesteps=T).to(dev)
+    dec = make_decoder(a.maskin).to(dev)
     opt = torch.optim.AdamW(dec.parameters(), lr=1e-4, weight_decay=1e-4)
     diff = Diffusion(timesteps=T, max_sparsity=a.sparsity, max_noise_std=a.noise_std, device=dev)
     os.makedirs(a.out, exist_ok=True)
@@ -89,6 +90,9 @@ def main():
                     "hist": hist, "gen": g.get_state(), "rng": torch.get_rng_state()}, last)
         print(f"epoch {ep+1}/{a.epochs} train {tr:.6f} valid {va:.6f} best {best:.6f}", flush=True)
 
+    if a.maskin:  # evaluated by eval_maskin_3_3.py (needs the observed mask)
+        print("DONE (maskin: evaluate with eval_maskin_3_3.py)", flush=True)
+        return
     # Evaluation: direct prediction at t=T on VALID (decoder gets t=T; for 'none' it gets 0).
     dec.load_state_dict(torch.load(best_path, map_location=dev, weights_only=True)); dec.eval()
     mse, rho = [], []
@@ -107,9 +111,28 @@ def main():
     print("RESULT", json.dumps({k: res[k] for k in ("mode", "seed", "valid_direct_mse", "valid_direct_rho")}), flush=True)
 
 
+def make_decoder(maskin):
+    """Archived decoder; with maskin the input has 3 channels (xT, observed mask)."""
+    if not maskin:
+        return OldDecoder(timesteps=T)
+    return OldDecoder(timesteps=T, in_channels=3)  # final skip uses init_conv features, so no other change
+
+
+def observed_mask(t, ng, dev, sparsity, mr):
+    """Known pixels: not removed by the sparsity mask, and with galaxies (both observable)."""
+    sp_t = (t.float() / T * sparsity).view(-1, 1, 1)
+    removed = mr < sp_t
+    return ((~removed) & (ng > 0)).unsqueeze(1).float()
+
+
 def _loss_with_t(dec, diff, a, x0, n, ng, dev):
     B = x0.size(0)
     t = batch_t(a.mode, B, dev)  # 'none' and 'fixed' degrade at T; 'random' at sampled t
+    if a.maskin:
+        mr = torch.rand((B,) + x0.shape[2:], device=dev)
+        xt = diff.degrade(x0, n, ng, t, fixed_mask_rand=mr)
+        inp = torch.cat([xt, observed_mask(t, ng, dev, a.sparsity, mr)], dim=1)
+        return ((dec(inp, t) - x0) ** 2).mean()
     xt = diff.degrade(x0, n, ng, t)
     t_dec = torch.zeros_like(t) if a.mode == "none" else t
     return ((dec(xt, t_dec) - x0) ** 2).mean()

@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH --job-name=EvMask33
+#SBATCH --time=02:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../../results/postmortem_3_3/maskin/logs/%x_%j.log
+#SBATCH --error=../../results/postmortem_3_3/maskin/logs/%x_%j.err
+
+# Evaluate one checkpoint: sbatch --export=ALL,CKPT=<best.pt>,MASKIN=<0|1>,OUT=<json> eval_maskin_3_3.job
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+FLAG=""; [ "$MASKIN" = "1" ] && FLAG="--maskin"
+$PY -u eval_maskin_3_3.py --ckpt "$CKPT" $FLAG --out "$OUT"
