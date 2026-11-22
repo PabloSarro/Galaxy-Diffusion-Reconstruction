@@ -67,6 +67,7 @@ def main():
     ap.add_argument("--n", type=int, default=64)
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--out", default="../../results/postmortem_3_3/cold_causes_valid.json")
+    ap.add_argument("--noise-std", type=float, default=STD)
     a = ap.parse_args()
     torch.manual_seed(0)
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -75,9 +76,9 @@ def main():
     idx = split["valid"][::max(1, len(split["valid"]) // a.n)][: a.n]
     dec = OldDecoder(timesteps=T).to(dev).eval()
     dec.load_state_dict(torch.load(CKPT, map_location=dev, weights_only=True))
-    diff = Diffusion(timesteps=T, max_sparsity=SP, max_noise_std=STD, device=dev)
+    diff = Diffusion(timesteps=T, max_sparsity=SP, max_noise_std=a.noise_std, device=dev)
     loader = DataLoader(Subset(ds, idx), batch_size=a.batch, shuffle=False)
-    res = {"meta": {"ckpt": CKPT, "n": len(idx), "sparsity": SP, "noise_std": STD, "T": T,
+    res = {"meta": {"ckpt": CKPT, "n": len(idx), "sparsity": SP, "noise_std": a.noise_std, "T": T,
                     "split": "valid (data-full, grouped split v1)", "torch": torch.__version__}}
     acc = {k: ([], []) for k in ["input", "direct", "matched", "mask_mismatch", "noise_mismatch", "resample"]}
     for bi, (x0, norms, ng) in enumerate(loader):

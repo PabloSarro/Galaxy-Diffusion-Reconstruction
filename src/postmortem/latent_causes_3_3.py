@@ -30,6 +30,9 @@ enc_mod = _load("old_latent_model", os.path.join(ROOT, "archive", "diffusion_7b9
 CKPT = os.path.join(ROOT, "archive", "old_results", "encoder", "dim128_0.01_0.25", "encoder_best.pt")
 
 
+NOISE = float(os.environ.get("LATENT_NOISE", "0.01"))  # probe observation noise (encoder trained at 0.01)
+
+
 def main():
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(0)
@@ -37,7 +40,7 @@ def main():
     split, _ = load_split(os.path.join(ROOT, "results", "splits", "split_v1.json"))
     enc = enc_mod.Encoder(latent_dim=128).to(dev).eval()
     enc.load_state_dict(torch.load(CKPT, map_location=dev, weights_only=True))
-    deg = Degradation(sparsity=0.25, noise_std=0.01, device=dev)
+    deg = Degradation(sparsity=0.25, noise_std=NOISE, device=dev)
 
     def embed(idx):
         zs = []
@@ -53,7 +56,7 @@ def main():
     z_tr, z_va = embed(tr), embed(va)
     y_tr, y_va = ds.targets[tr], ds.targets[va]
     g_va = ds.groups[va]
-    out = {"meta": {"encoder": CKPT, "sparsity": 0.25, "noise_std": 0.01, "split": "valid (grouped v1)"}}
+    out = {"meta": {"encoder": CKPT, "sparsity": 0.25, "noise_std": NOISE, "split": "valid (grouped v1)"}}
 
     clf = LogisticRegression(max_iter=2000).fit(z_tr, y_tr)
     out["probe_class_acc_valid"] = float(clf.score(z_va, y_va))
@@ -79,7 +82,7 @@ def main():
     out["t_snr_eq_1_data_var"] = int(np.argmax(snr(var) < 1))
 
     os.makedirs(os.path.join(ROOT, "results", "postmortem_3_3"), exist_ok=True)
-    with open(os.path.join(ROOT, "results", "postmortem_3_3", "latent_causes_valid.json"), "w") as f:
+    with open(os.path.join(ROOT, "results", "postmortem_3_3", f"latent_causes_valid_noise{NOISE}.json"), "w") as f:
         json.dump(out, f, indent=2)
     print(json.dumps(out, indent=1))
 

@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --job-name=PM33s22old
+#SBATCH --time=04:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --account=env540
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../../results/postmortem_3_3/sigma0.22/logs_%j.log
+#SBATCH --error=../../results/postmortem_3_3/sigma0.22/logs_%j.err
+
+# sigma = 0.22 versions of the old-checkpoint analyses (cold causes, T sweep) and the latent probe.
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+O=../../results/postmortem_3_3/sigma0.22
+$PY -u cold_causes_3_3.py --n 64 --batch 32 --noise-std 0.22 --out $O/cold_causes_valid.json
+$PY -u t_sweep_3_3.py --noise-std 0.22 --out $O/t_sweep_valid.json
+LATENT_NOISE=0.22 $PY -u latent_causes_3_3.py

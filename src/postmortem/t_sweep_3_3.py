@@ -8,13 +8,18 @@ from dataset import GalaxyDataset
 from splits import load_split
 from eval_split import per_sample_metrics
 
+import argparse
+_ap = argparse.ArgumentParser()
+_ap.add_argument("--noise-std", type=float, default=cc.STD)
+_ap.add_argument("--out", default="../../results/postmortem_3_3/t_sweep_valid.json")
+ARGS = _ap.parse_args()
 dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 ds = GalaxyDataset("../../data-full/")
 split, _ = load_split("../../results/splits/split_v1.json")
 idx = split["valid"][:: max(1, len(split["valid"]) // 64)][:64]
 dec = cc.OldDecoder(timesteps=cc.T).to(dev).eval()
 dec.load_state_dict(torch.load(cc.CKPT, map_location=dev, weights_only=True))
-diff = cc.Diffusion(timesteps=cc.T, max_sparsity=cc.SP, max_noise_std=cc.STD, device=dev)
+diff = cc.Diffusion(timesteps=cc.T, max_sparsity=cc.SP, max_noise_std=ARGS.noise_std, device=dev)
 Ks = [1, 5, 20, 100, 1000]
 acc = {K: ([], []) for K in Ks}
 for bi, (x0, norms, ng) in enumerate(DataLoader(Subset(ds, idx), batch_size=32, shuffle=False)):
@@ -35,4 +40,5 @@ res = {"meta": {"n": len(idx), "matched randomness": True, "torch": torch.__vers
        "K": {str(K): {"mse": float(np.concatenate(acc[K][0]).mean()), "rho": float(np.concatenate(acc[K][1]).mean())} for K in Ks}}
 print(json.dumps(res, indent=1))
 os.makedirs("../../results/postmortem_3_3", exist_ok=True)
-json.dump(res, open("../../results/postmortem_3_3/t_sweep_valid.json", "w"), indent=2)
+res["meta"]["noise_std"] = ARGS.noise_std
+json.dump(res, open(ARGS.out, "w"), indent=2)
