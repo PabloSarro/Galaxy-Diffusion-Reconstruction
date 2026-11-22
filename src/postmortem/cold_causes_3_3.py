@@ -35,22 +35,23 @@ SP, STD, T = 0.20, 0.005, 1000
 def run_algo2(dec, diff, xT, norms, ng, K, mode, M=None, E1=None, E2=None, gen=None):
     """Algorithm 2 with K steps. mode: matched | resample. M,E1,E2: randomness used for every step."""
     B, C, H, W = xT.shape
+    dev = xT.device
     x = xT.clone()
     ts = [round(k * T / K) for k in range(K, -1, -1)]  # T, ..., 0
     with torch.no_grad():
         for k in range(K):
             t_hi, t_lo = ts[k], ts[k + 1]
-            tb = torch.full((B,), t_hi, dtype=torch.long)
+            tb = torch.full((B,), t_hi, dtype=torch.long, device=dev)
             x0p = dec(x, tb)
             if mode == "resample":
                 m_, e1_, e2_ = None, None, None
             else:
                 m_, e1_, e2_ = M, E1, E2
             # One degradation draw per timestep pair: same randomness for both D calls within a step.
-            th = torch.full((B,), t_hi, dtype=torch.long)
-            tl = torch.full((B,), t_lo, dtype=torch.long)
+            th = torch.full((B,), t_hi, dtype=torch.long, device=dev)
+            tl = torch.full((B,), t_lo, dtype=torch.long, device=dev)
             if mode == "resample":
-                mm = torch.rand((B, H, W)); ee1 = torch.randn((B, H, W)); ee2 = torch.randn((B, H, W))
+                mm = torch.rand((B, H, W), device=dev); ee1 = torch.randn((B, H, W), device=dev); ee2 = torch.randn((B, H, W), device=dev)
                 xh = diff.degrade(x0p, norms, ng, th, fixed_mask_rand=mm, fixed_e1=ee1, fixed_e2=ee2)
                 xl = diff.degrade(x0p, norms, ng, tl, fixed_mask_rand=mm, fixed_e1=ee1, fixed_e2=ee2)
             else:
