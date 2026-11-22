@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "ckpt": "/home/sarro/SummerProj/src/postmortem/../../archive/results/old_reconstr/2-new_arch/ep50_sp0.2_std0.005/training/decoder_best.pt",
+    "n": 64,
+    "sparsity": 0.2,
+    "noise_std": 0.005,
+    "T": 1000,
+    "split": "valid (data-full, grouped split v1)",
+    "torch": "2.5.1"
+  },
+  "conditions": {
+    "input": {
+      "mse": 0.06562968890195306,
+      "rho": 0.7935724123830136
+    },
+    "direct": {
+      "mse": 0.00017060191343663453,
+      "rho": 0.976299115221833
+    },
+    "matched": {
+      "mse": 2.5382492706695357e-05,
+      "rho": 0.9828863500882878
+    },
+    "mask_mismatch": {
+      "mse": 0.027876264462133576,
+      "rho": 0.8027281132869004
+    },
+    "noise_mismatch": {
+      "mse": 0.1318725924628716,
+      "rho": 0.863639389481285
+    },
+    "resample": {
+      "mse": 0.07200487290687492,
+      "rho": 0.7662330461494602
+    }
+  }
+}

@@ -1,0 +1,32 @@
+host=i24 date=dim 22 nov 2026 15:45:42 CET
+Tesla V100-PCIE-32GB
+batch 0 {'input': 0.7905, 'direct': 0.9875, 'matched': 0.9913, 'mask_mismatch': 0.8003, 'noise_mismatch': 0.8589, 'resample': 0.7628}
+batch 1 {'input': 0.7936, 'direct': 0.9763, 'matched': 0.9829, 'mask_mismatch': 0.8027, 'noise_mismatch': 0.8636, 'resample': 0.7662}
+{
+ "input": {
+  "mse": 0.06562968890195306,
+  "rho": 0.7935724123830136
+ },
+ "direct": {
+  "mse": 0.00017060191343663453,
+  "rho": 0.976299115221833
+ },
+ "matched": {
+  "mse": 2.5382492706695357e-05,
+  "rho": 0.9828863500882878
+ },
+ "mask_mismatch": {
+  "mse": 0.027876264462133576,
+  "rho": 0.8027281132869004
+ },
+ "noise_mismatch": {
+  "mse": 0.1318725924628716,
+  "rho": 0.863639389481285
+ },
+ "resample": {
+  "mse": 0.07200487290687492,
+  "rho": 0.7662330461494602
+ }
+}
+saved ../../results/postmortem_3_3/cold_causes_valid.json
+done dim 22 nov 2026 16:01:25 CET
