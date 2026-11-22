@@ -9,7 +9,7 @@
 ## Status
 - `[X]` 1 Reproduce + golden · exit: logs matched, golden test passes · result: –
 - `[X]` 2 Cleanup + resumable training (2.1–2.2) · exit: approved list applied, resume test passes, tests + golden pass · result: –
-- `[~]` 3A Fair protocol + baseline B1 (3.1–3.2) · exit: 2 seeds, matched-σ kNN · result: –
+- `[X]` 3A Fair protocol + baseline B1 (3.1–3.2) · exit: 2 seeds, matched-σ kNN · result: –
 - `[-]` 3B Diffusion post-mortem (3.3) · exit: each failure cause confirmed or rejected · result: –
 - `[-]` 3C Representation fixes (3.4) · exit: each change judged vs seed spread · result: –
 - `[-]` 3D Cold diffusion v2 (3.5–3.8) · exit: beats B1 and kNN beyond spread · result: –
