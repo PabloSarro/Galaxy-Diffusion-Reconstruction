@@ -177,7 +177,7 @@
     - Golden: `results/B1/closing/golden_B1_sigma0.22_seed1.json` (pred MSE 6.86e-4, mean 0.545), same inputs as `tests/golden`. In pytest: `tests/golden/test_golden.py::test_B1_matches_golden` (3 golden tests pass, 2026-11-22).
     - Backup (copy, nothing deleted): `/home/sarro/backups/B1/{sigma0.22,sigma0}/seed{1,2}/decoder_best.pt`, outside the repo. Confirm this location meets D8.
     - Test split untouched.
-- `[-]` **3.3 Post-mortem of the old diffusion runs**
+- `[~]` **3.3 Post-mortem of the old diffusion runs**
   - Goal: know why each old attempt failed, with evidence.
   - Why: old Algo 2 (ρ 0.7404) was worse than its own input (0.7718); latent DDPM gave ρ ≈ 0.03.
   - Steps:
@@ -195,6 +195,11 @@
     - Write `docs/DIFFUSION_POSTMORTEM.md` (asked for by this task).
   - Effort: 9 h / 28 GPU-h (6 screening runs of 60 epochs).
   - Success: each cause marked confirmed / rejected with a number.
+  - Outcome (2026-11-22, in progress): code restored to `archive/diffusion_7b9b37c/` (local; recoverable from git commits `7b9b37c`, `5b7efd0`) (cold: `diffusion.py`, `model.py`; latent: `model_latent_5b7efd0.py`, from commits 7b9b37c and 5b7efd0). Checkpoint `2-new_arch/ep50_sp0.2_std0.005` loads with the archived model (all keys match).
+    - Cold causes: `src/postmortem/cold_causes_3_3.py`, job 3263020 (env540, queued). Writes `results/postmortem_3_3/cold_causes_valid.json`. Conditions: matched, mask mismatch, noise mismatch, resample each step, direct; T sweep to follow.
+    - Latent causes: `src/postmortem/latent_causes_3_3.py`, job 3263021 (env540, queued). Writes `results/postmortem_3_3/latent_causes_valid.json`: encoder probe, nearest-neighbour retrieval, data scale vs unit-variance prior.
+    - Caveat: old BAHAMAS data is gone (D12), so absolute numbers differ from the report; compare conditions with each other.
+    - Still to do: T sweep; time comparison (no time / fixed t / random t, 2 seeds) needs training runs (large GPU cost, confirm before launch); architecture test "network never sees the mask" can't be run without retraining; `docs/DIFFUSION_POSTMORTEM.md`.
   - Outcome (date):
 - `[-]` **3.4 Representation and conditioning fixes (on B1, one change each)**
   - Goal: remove artefacts both the baseline and diffusion would inherit.

@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH --job-name=PM33cold
+#SBATCH --time=04:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --account=env540
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../../results/postmortem_3_3/cold_job_%j.log
+#SBATCH --error=../../results/postmortem_3_3/cold_job_%j.err
+
+# Task 3.3: cold-diffusion causes on the old checkpoint, valid split (64 maps). Run from src/postmortem/.
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+echo "host=$(hostname) date=$(date)"; nvidia-smi --query-gpu=name --format=csv,noheader
+$PY -u cold_causes_3_3.py --n 64 --batch 32
+echo "done $(date)"
