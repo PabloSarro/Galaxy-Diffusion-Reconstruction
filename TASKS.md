@@ -174,7 +174,7 @@
     - σ=0: seed1 MSE 3.0e-5 ρ 0.969; seed2 MSE 3.0e-5 ρ 0.967. Mean ρ 0.968, spread 0.0019. Old Model 2: 2.3e-5 / 0.949.
     - Seed-selection rule: best VALID epoch of each run (`decoder_best.pt`); the two seeds are reported, none selected.
     - Classifier on B1 outputs, matched σ, VALID (`src/b1_classify.py`, job 3262848, `results/B1/closing/classifier_b1_valid.json`): σ=0.22 acc 0.086 / 0.086 (bal-acc 0.18), below the constant-predictor rate 0.200. σ=0 acc 0.577 / 0.576 (ceiling 0.626). Suite collapse survives the fair protocol.
-    - Golden: `results/B1/closing/golden_B1_sigma0.22_seed1.json` (pred MSE 6.86e-4, mean 0.545), same inputs as `tests/golden`. Not yet part of the pytest golden check.
+    - Golden: `results/B1/closing/golden_B1_sigma0.22_seed1.json` (pred MSE 6.86e-4, mean 0.545), same inputs as `tests/golden`. In pytest: `tests/golden/test_golden.py::test_B1_matches_golden` (3 golden tests pass, 2026-11-22).
     - Backup (copy, nothing deleted): `/home/sarro/backups/B1/{sigma0.22,sigma0}/seed{1,2}/decoder_best.pt`, outside the repo. Confirm this location meets D8.
     - Test split untouched.
 - `[-]` **3.3 Post-mortem of the old diffusion runs**
