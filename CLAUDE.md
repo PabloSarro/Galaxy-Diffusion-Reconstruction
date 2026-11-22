@@ -25,10 +25,12 @@ results live in `TASKS.md`. This file only says how to work.
 - `results/`: `Reconstruction/Model {1,2,3}` (old-split checkpoints + logs), `Classification/`,
   `splits/split_v1.json` (grouped split, seed 0, 70/15/15), `split_v1/` (3.1 outputs: baselines,
   classification, physics, diagnostics), `B1/` (3.2 seeds 1–2 at σ=0.22 and σ=0; `closing/` outputs),
-  `postmortem_3_3/` (3.3 outputs), `smoke_2.2/`, `repro_1.1/` (local).
+  `postmortem_3_3/` (3.3 outputs; `sigma0.22/`, `encoder_sigma0.22/`, `latent_decoder_sigma0.22/` are
+  symlinks to `/scratch/izar/sarro/SummerProj_runs/postmortem_3_3/`, home quota), `smoke_2.2/`, `repro_1.1/` (local).
 - `report/`: LaTeX sources (`shear_reconstruction.tex`, `LASTRO - Summer Project Report.tex`,
   `images/`); `report.zip` is the original bundle. Git-ignored.
-- `archive/`: retired code, old results, old test scripts; `archive/diffusion_7b9b37c/` holds the old cold/latent diffusion code (git-ignored; see `archive/MOVED.md`).
+- `archive/`: retired code, old results, old test scripts; `archive/diffusion_7b9b37c/` holds the old cold/latent diffusion code; unused parts moved to
+  `/scratch/izar/sarro/SummerProj_archive_unused/` (git-ignored; see `archive/MOVED.md`).
 - `envSummer1_conda/`: conda env used by the jobs (git-ignored). `data-full/`: data (read-only).
 - Outside the repo: `/home/sarro/external/PyTorch-Network-Loader` (pin `0a12e38`).
 - Keep this map current: update it whenever the structure changes.
