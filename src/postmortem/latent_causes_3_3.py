@@ -27,7 +27,7 @@ def _load(name, path):
 
 
 enc_mod = _load("old_latent_model", os.path.join(ROOT, "archive", "diffusion_7b9b37c", "model_latent_5b7efd0.py"))
-CKPT = os.path.join(ROOT, "archive", "old_results", "encoder", "dim128_0.01_0.25", "encoder_best.pt")
+CKPT = os.environ.get("LATENT_ENCODER", os.path.join(ROOT, "archive", "old_results", "encoder", "dim128_0.01_0.25", "encoder_best.pt"))
 
 
 NOISE = float(os.environ.get("LATENT_NOISE", "0.01"))  # probe observation noise (encoder trained at 0.01)

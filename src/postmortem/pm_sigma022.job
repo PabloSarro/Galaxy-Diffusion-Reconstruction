@@ -16,4 +16,4 @@ PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
 O=../../results/postmortem_3_3/sigma0.22
 $PY -u cold_causes_3_3.py --n 64 --batch 32 --noise-std 0.22 --out $O/cold_causes_valid.json
 $PY -u t_sweep_3_3.py --noise-std 0.22 --out $O/t_sweep_valid.json
-LATENT_NOISE=0.22 $PY -u latent_causes_3_3.py
+LATENT_ENCODER=../../results/postmortem_3_3/encoder_sigma0.22/encoder_best.pt LATENT_NOISE=0.22 $PY -u latent_causes_3_3.py  # sigma-matched encoder

@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH --job-name=LatDec022
+#SBATCH --time=72:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --account=env540
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../../results/postmortem_3_3/latent_decoder_sigma0.22/logs_%j.log
+#SBATCH --error=../../results/postmortem_3_3/latent_decoder_sigma0.22/logs_%j.err
+
+# Latent step 2: DDPM decoder on the sigma=0.22 encoder latent. Resumable: resubmit the same command.
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+$PY -u latent_decoder_sigma022_3_3.py --encoder ../../results/postmortem_3_3/encoder_sigma0.22/encoder_best.pt \
+    --noise-std 0.22 --sparsity 0.70 --epochs 100 --out ../../results/postmortem_3_3/latent_decoder_sigma0.22
