@@ -195,11 +195,13 @@
     - Write `docs/DIFFUSION_POSTMORTEM.md` (asked for by this task).
   - Effort: 9 h / 28 GPU-h (6 screening runs of 60 epochs).
   - Success: each cause marked confirmed / rejected with a number.
-  - Outcome (2026-11-22, in progress): code restored to `archive/diffusion_7b9b37c/` (local; recoverable from git commits `7b9b37c`, `5b7efd0`) (cold: `diffusion.py`, `model.py`; latent: `model_latent_5b7efd0.py`, from commits 7b9b37c and 5b7efd0). Checkpoint `2-new_arch/ep50_sp0.2_std0.005` loads with the archived model (all keys match).
-    - Cold causes: `src/postmortem/cold_causes_3_3.py`, job 3263020 (env540, queued). Writes `results/postmortem_3_3/cold_causes_valid.json`. Conditions: matched, mask mismatch, noise mismatch, resample each step, direct; T sweep to follow.
-    - Latent causes: `src/postmortem/latent_causes_3_3.py`, job 3263021 (env540, queued). Writes `results/postmortem_3_3/latent_causes_valid.json`: encoder probe, nearest-neighbour retrieval, data scale vs unit-variance prior.
-    - Caveat: old BAHAMAS data is gone (D12), so absolute numbers differ from the report; compare conditions with each other.
-    - Still to do: T sweep; time comparison (no time / fixed t / random t, 2 seeds) needs training runs (large GPU cost, confirm before launch); architecture test "network never sees the mask" can't be run without retraining; `docs/DIFFUSION_POSTMORTEM.md`.
+  - Outcome (2026-11-22, running): code restored to `archive/diffusion_7b9b37c/` (local; recoverable from git commits `7b9b37c`, `5b7efd0`). Checkpoint `2-new_arch/ep50_sp0.2_std0.005` loads with the archived model.
+    - Data note: the old training set (`/scratch/izar/.../BAHAMAS-data-nonsparse/`) is gone; `data-full/` has BAHAMAS maps prepared differently. Analyses run on `data-full` VALID; absolute numbers are not comparable to the report, conditions are compared with each other.
+    - Cold causes (matched / mask mismatch / noise mismatch / resample / direct): `src/postmortem/cold_causes_3_3.py`, job 3263022 (env540). Output `results/postmortem_3_3/cold_causes_valid.json`. (First attempt 3263020 crashed on a unpacking bug, fixed.)
+    - T sweep (K = 1, 5, 20, 100, 1000, matched): `src/postmortem/t_sweep_3_3.py`, job 3263030. Output `results/postmortem_3_3/t_sweep_valid.json`.
+    - Latent causes (encoder probe, nearest-neighbour retrieval, data scale vs unit-variance prior): `src/postmortem/latent_causes_3_3.py`, job 3263021. Output `results/postmortem_3_3/latent_causes_valid.json`. Decoder conditioning is confirmed from the archived code: the latent decoder takes z only, not the observation.
+    - Time comparison (D12; s=0.7, σ=0.005, 60 epochs, 2 seeds, split v1). My definitions, to confirm: `random` = t ~ U{1..T}, decoder sees t; `fixed` = always t=T; `none` = always t=T but decoder gets no time information. `src/postmortem/time_comparison_3_3.py`. Jobs: random s1 3263029 (master), random s2 3263024 (math-454), fixed s1/s2 3263025/3263026 and none s1/s2 3263027/3263028 (env540). Output `results/postmortem_3_3/time/<mode>_s<seed>/result.json`.
+    - Still open: architecture test "network never sees the mask" needs retraining (not run); `docs/DIFFUSION_POSTMORTEM.md`; decide each cause confirmed/rejected with numbers after the runs.
   - Outcome (date):
 - `[-]` **3.4 Representation and conditioning fixes (on B1, one change each)**
   - Goal: remove artefacts both the baseline and diffusion would inherit.

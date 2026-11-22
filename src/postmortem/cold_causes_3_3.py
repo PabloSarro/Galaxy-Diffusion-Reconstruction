@@ -90,7 +90,7 @@ def main():
         E1b = torch.randn((B, H, W), device=dev, generator=g)
         E2b = torch.randn((B, H, W), device=dev, generator=g)
         with torch.no_grad():
-            xT, _ = diff.degrade(x0, norms, ng, torch.full((B,), T, device=dev, dtype=torch.long),
+            xT = diff.degrade(x0, norms, ng, torch.full((B,), T, device=dev, dtype=torch.long),
                                  fixed_mask_rand=M, fixed_e1=E1, fixed_e2=E2)
             preds = {
                 "input": xT,

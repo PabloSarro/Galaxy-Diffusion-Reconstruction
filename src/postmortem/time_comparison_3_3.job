@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --job-name=TC33
+#SBATCH --time=12:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --output=../../results/postmortem_3_3/time/logs/%x_%j.log
+#SBATCH --error=../../results/postmortem_3_3/time/logs/%x_%j.err
+
+# Task 3.3 / D12 time comparison. Submit with --export=ALL,MODE=<random|fixed|none>,SEED=<1|2>
+# (account given at submit time). Resumes from last.pt if the 12 h limit is hit: resubmit the same command.
+PY=/home/sarro/SummerProj/envSummer1_conda/bin/python
+OUT=../../results/postmortem_3_3/time/${MODE}_s${SEED}
+echo "host=$(hostname) date=$(date) mode=$MODE seed=$SEED out=$OUT"
+$PY -u time_comparison_3_3.py --mode "$MODE" --seed "$SEED" --epochs 60 --sparsity 0.70 --noise-std 0.005 --out "$OUT"
+echo "done $(date)"
